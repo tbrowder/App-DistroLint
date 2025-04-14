@@ -1,0 +1,160 @@
+=begin pod
+
+=head1 NAME
+
+B<Mi6::Helper> - Creates a base repository for a new Raku module managed by B<App::Mi6>
+
+=head1 SYNOPSIS
+
+=begin code
+use Mi6::Helper
+$ mi6-helper new=Foo::Bar  # Uses the brief descriptive text in
+                           # hidden file '.Foo-Bar' (if any)
+=end code
+
+=head1 DESCRIPTION
+
+B<Easily> create the template for a new Raku module repository for management by C<App::Mi6>.
+
+This module creates a new repo by running 'mi6' (from module 'App::Mi6'), and then modifies that
+output by running this module's 'mi6-helper' to get modifications including:
+
+=item User choice of the brief descriptive text (recommended, but not required)
+=item C<README.md> file source placed in a new C<docs/README.rakudoc> file
+=item Using three separate OS tests in C<.github/workflows>: shows results of each in the auto-geberated C<README.md> file
+=item Publishing in the B<Zef> Raku module ecosystem (now standard with the current 'mi6')
+
+See published module C<Foo::Bar> for an example of a module created by C<mi6-helper>.
+
+=head2 Special installation requirements
+
+The user must install and have an account with C<fez> to use this
+module to create a new module repository:
+
+=begin code
+zef install fez
+fez register
+=end code
+
+=head2 Define the branch 'git origin'
+
+The author uses and recommends GitHub for the 'git origin' for your
+new module's repository.
+
+A short list of steps to define such for our example 'Foo::Bar':
+
+1. Define a new repo on GitHub named 'Foo-Bar' (note no '::' separator)
+
+2. On your computer, use the shell terminal to run these commands (for Linux
+or MacOS):
+
+=begin code
+$ cd /path/to/some-parent-dir
+$ mi6-helper new=Foo::Bar  # <== note the '::' separator, but no quotes
+=end code
+
+The repo should be created with a branch name per your personal
+settings for the default branch name (I use 'main' here). This is the
+output:
+
+=begin code
+Getting description text from hidden file '.Foo-Bar'
+[main (root-commit) 30a8b25] 'initial'
+ 12 files changed, 431 insertions(+)
+ create mode 100644 .github/workflows/linux.yml
+ create mode 100644 .github/workflows/macos.yml
+ create mode 100644 .github/workflows/windows.yml
+ create mode 100644 .gitignore
+ create mode 100644 Changes
+ create mode 100644 LICENSE
+ create mode 100644 META6.json
+ create mode 100644 README.md
+ create mode 100644 dist.ini
+ create mode 100644 docs/README.rakudoc
+ create mode 100644 lib/Foo/Bar.rakumod
+ create mode 100644 t/0-load-test.rakutest
+Using directory '/path/to/some-parent-dir'
+  as the working directory.
+Exit after 'new' mode run. See new module repo 'Foo-Bar'
+in parent dir '/path/to/some-parent-dir'.
+=end code
+
+At this point, execute the following commands to define the origin and
+push the new branch to the repo awaiting it on GitHub:
+
+=begin code
+# GitHub: ...or push an existing repository from the command line...
+# following those instructions with our fresh Foo::Bar repo:
+$ git remote add origin git@github.com:user/Foo-Bar.git
+$ git branch -M main
+$ git push -u origin main
+=end code
+
+Note this module has changed significantly since the author has had
+much more experience using B<App::Mi6>.  For example, discovering that
+accidentally using C<mi6 test> in a non-mi6 module's base directory
+will corrupt an existing README.md file! (See 'App::Mi6' issue \#157.)
+
+This module installs a Raku executable named C<mi6-helper> which is
+designed for the following mode of operation:
+
+=head2 new
+
+=begin item
+new=X dir=Y
+
+Creates a new module 'X' in parent directory 'Y' (default '.') using
+B<mi6> and then changes some of the files and directories to satisfy the 'docs'
+option and, optionally, substitute 'blah...' with the user's short
+description (if it is provided in a hidden file).
+
+Provides a final C<mi6 build> and C<git commit -a -m"initial commit">
+so the new repository is ready to C<git push <remote> <branch>>
+and C<mi6 release>.
+
+=end item
+
+B<NOTE>: If one of the non-Linux OS tests fail, you can eliminate that test by doing
+the following two steps (for example, remove the C<macos> test):
+
+=item Move the C<macos.yml> file out of the C<.github/workflows/> directory (the
+author uses a subdir named C<dev> to hold such things).
+=item Put a semicolon in the C<dist.ini> file to comment out the line naming the C<macos.yml> file
+
+=head2 Modified files for mode B<new>
+
+See L<NewMode|zNewMode.md> for details of each changed line from the original
+created by C<App::Mi6>.
+
+In addition to those changes, the README is converted to a Rakudoc file
+in a new C<./docs/> directory. Then the 'dist.ini' file is modified
+to create the 'README.md' file in the base directory. Both files
+are placed under 'git' control.
+
+=head2 See also
+
+A new, in-work L<App::DistroLint|https://github.com/tbrowder/App-DistroLint>
+by the author.
+
+=head1 AUTHOR
+
+Tom Browder <tbrowder@acm.org>
+
+=head1 CREDITS
+
+The very useful Raku modules used herein:
+
+=item C<App::Mi6>              by B<zef:skaji>
+=item C<File::Directory::Tree> by B<github:labster>
+=item C<File::Temp>            by B<zef:rbt>
+=item C<Proc::Easier>          by B<zef:sdondley>
+=item C<File::Find>            by B<zef:raku-community-modules>
+=item C<MacOS::NativeLib>      by B<zef:lizmat>
+
+=head1 COPYRIGHT AND LICENSE
+
+&#x00A9; 2020-2025 Tom Browder
+
+This library is free software; you may redistribute it or modify it under the Artistic License 2.0.
+
+=end pod

@@ -1,0 +1,11 @@
+.precomp/
+/Mi6-Helper-*
+/mi6-helper
+null/
+ini-fils/
+dev/Foo-Bar/
+dev/*.json
+debug-test/
+Foo-Bar/
+.Foo-Bar
+lint-results.txt

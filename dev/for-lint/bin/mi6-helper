@@ -1,0 +1,13 @@
+#!/usr/bin/env raku
+
+use Mi6::Helper;
+use Mi6::Helper::Utils;
+
+if not @*ARGS {
+    # usage
+    mi6-help;
+    exit;
+}
+
+my @args = @*ARGS;
+run-args @args;

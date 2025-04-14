@@ -1,0 +1,24 @@
+use Test;
+
+use File::Temp;
+use Mi6::Helper;
+use Mi6::Helper::Utils;
+
+my ($Xstr, $Xnam, $tdir, $o, $descrip);
+
+$tdir = tempdir;
+chdir $tdir;
+
+my $module-name = 'Foo::Bar-Baz';
+my $module-dir  = 'Foo-Bar-Baz';
+my $descrip-hidden = get-hidden-name(:$module-name);
+my $parent-dir = $tdir;
+
+$descrip = 'Some text';
+$o = Mi6::Helper.new: :$parent-dir, :$module-dir, :$module-name, :$descrip;
+isa-ok $o, Mi6::Helper;
+is $o.descrip, $descrip;
+is $o.module-name, $module-name;
+is $o.module-dir, $module-dir;
+
+done-testing;
