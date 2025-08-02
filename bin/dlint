@@ -1,0 +1,19 @@
+#!/usr/bin/env raku
+
+use App::DistroLint;
+
+if not @*ARGS {
+    print qq:to/HERE/;
+    Usage: {$*PROGRAM.basename} </path/to/distro/directory>
+
+    Searches the repository directory for issues affecting 
+    normal operation of the distribution's repository.
+
+    Current actions:
+
+    + Reports the distribution's list of other distribution's
+      being 'used' in the 'META6.json' file's list versus those actually 
+      being 'used' in the 'bin', 'sbin', and 'rakumod' files.
+    HERE
+    exit;
+}

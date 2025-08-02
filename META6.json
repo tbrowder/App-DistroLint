@@ -16,8 +16,9 @@
   },
   "resources": [
   ],
-  "source-url": "",
+  "source-url": "https://github.com/tbrowder/App-DistroLint.git",
   "tags": [
+    "lint distribution META6"
   ],
   "test-depends": [
   ],

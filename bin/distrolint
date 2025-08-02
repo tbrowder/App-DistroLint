@@ -1,0 +1,47 @@
+#!/usr/bin/env raku
+
+use App::DistroLint;
+
+if not @*ARGS {
+    print qq:to/HERE/;
+    Usage: {$*PROGRAM.basename} </path/to/distro/directory>
+
+    Searches the repository directory for issues affecting 
+    normal operation of the distribution's repository.
+
+    Current actions:
+
+    + Reports the distribution's list of other distribution's
+      being 'used' in the 'META6.json' file's list versus those actually 
+      being 'used' in the 'bin', 'sbin', and 'rakumod' files.
+    HERE
+    exit;
+}
+
+my $repo-path;
+
+my $nargs = @*ARGS.elems;
+for @*ARGS {
+    when $_.IO.r {
+        unless $repo-path.defined {
+            $repo-path = $_;
+            next;
+        }
+        print qq:to/HERE/;
+        FATAL: Multiple input paths detected.
+               Exiting...
+        HERE
+        exit(1);
+    }
+    when /^ :i d / {
+        ++$debug;
+    }
+    default {
+        print qq:to/HERE/;
+        FATAL: Unknown arg '$_'.
+               Exiting...
+        HERE
+        exit(1);
+    }
+}
+
