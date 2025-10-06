@@ -1,0 +1,16 @@
+check common errors
+===================
+
+note App::Mi6 will not recognize a new module with
+"mi6 build" if it hasn't neen added to the Git repo
+
+bad line endings:
+   |"";"| # bad
+   |"";|  # good
+   |"";'| # bad
+   |"";|  # good
+
+bad module names:
+   |X;| # bad
+   |unit module X;| # good
+   |unit class X;| # good

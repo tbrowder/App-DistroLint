@@ -1,0 +1,24 @@
+# Checking all 'use'd modules are listed in the 'META6.json' file
+#   and vice versa.
+# types.
+#
+# Modules being used:
+  Consider moving 'test-depends' modules to 'depends'
+  Modules in source code but not in the META6.json file
+    'Git::Status'
+    'Mi6::Helper::Subs'
+  Modules in the META6.json file but not in source code
+    'App::Mi6:ver<3.0.6+>'
+    'Bin::Utils'
+    'File::Directory::Tree'
+    'File::Find'
+    'File::Temp'
+    'Foo::Bar'
+    'MacOS::NativeLib'
+    'Pod::Load'
+    'Proc::Easier'
+    'Text::Utils'
+# Checking mismatch between any files listed in the module's
+#   /resources directory and those in the 'META6.json' file.
+#
+# Resources mismatch:
