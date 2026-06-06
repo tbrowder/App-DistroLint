@@ -6,9 +6,8 @@
   "build-depends": [
   ],
   "depends": [
-    "JSON::Fast::Hyper"
   ],
-  "description": "blah blah blah",
+  "description": "Providesca lint tool for Raku distro creation",
   "license": "Artistic-2.0",
   "name": "App::DistroLint",
   "perl": "6.d",
