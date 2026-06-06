@@ -75,14 +75,17 @@ my %mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
 
 # search the bin and rakumod files for used modules
 my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
-my @fils2 = find :dir("$repo-path/bin"), :type('file'), :ignore(/.git/);
+my @fils2 = find :dir("$repo-path/bin"), :type('file'), :exclude(/\.git/);
+my @all   = @fils.append(@fils2);
 if $debug {
-    say $_ for @fils, @fils2;
+    say $_ for @all;
 }
 
 # search for used modules
 my %used-modules;
-for @fils -> $fil {
+for @all -> $fil {
+    say "Working file '$fil'";
+    next;
     for $fil.IO.lines -> $line is rw {
         $line = strip-comment $line;
         # remove any semicolons
