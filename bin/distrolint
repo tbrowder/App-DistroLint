@@ -1,5 +1,9 @@
 #!/usr/bin/env raku
 
+use JSON::Fast;
+use File::Find;
+use Text::Utils :strip-comment;
+
 use App::DistroLint;
 
 if not @*ARGS {
@@ -19,6 +23,7 @@ if not @*ARGS {
 }
 
 my $repo-path;
+my $debug = 0;
 
 my $nargs = @*ARGS.elems;
 for @*ARGS {
@@ -45,3 +50,63 @@ for @*ARGS {
     }
 }
 
+# get the META6.json contents
+my %meta = from-json "$repo-path/META6.json".IO.slurp;
+# the used modules need to be in one of:
+my %h-deps       = @(%meta<depends>).map({ $_ => True });
+my %h-test-deps  = @(%meta<test-depends>).map({ $_ => True });
+my %h-build-deps = @(%meta<build-depends>).map({ $_ => True });
+
+# check for dups in hashes
+my @c1 = (%h-deps.keys       (&) %h-test-deps.keys).keys;
+my @c2 = (%h-deps.keys       (&) %h-build-deps.keys).keys;
+my @c3 = (%h-build-deps.keys (&) %h-test-deps.keys).keys;
+my $dups = @c1.elems + @c2.elems + @c3.elems;
+
+if $dups {
+    say "WARNING: Found $dups duplicate entries in the META6.json file."; 
+    say "         Please correct that before continuing.";
+    say "         Early exit...";
+    exit(1);
+}
+
+# combine the hashes
+my %mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
+
+# search the bin and rakumod files for used modules
+my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
+my @fils2 = find :dir("$repo-path/bin"), :type('file'), :ignore(/.git/);
+if $debug {
+    say $_ for @fils, @fils2;
+}
+
+# search for used modules
+my %used-modules;
+for @fils -> $fil {
+    for $fil.IO.lines -> $line is rw {
+        $line = strip-comment $line;
+        # remove any semicolons
+        while $line ~~ /';'/ {
+            $line ~~ s/';'//;
+        }
+        # assume only one module is used per line
+        my $module = "";
+        my @words = $line.words;
+        # the expected line is "use $module"
+        my $w1 = @words.shift;
+        unless $w1 eq 'use' {
+            say "ERROR: Unexpected leading word '$w1' instead of 'use'";
+        }
+        my $w2 = @words.shift;
+        unless %used-modules{$w2}:exists {
+            %used-modules{$w2} = 1; 
+        }
+    }
+}
+
+# compare the two sets of hashes
+for %used-modules.keys -> $m {
+    unless %mods{$m}:exists {
+        say "add module $m to the META6.json file";
+    }
+}
