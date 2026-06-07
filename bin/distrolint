@@ -18,6 +18,10 @@ if not @*ARGS {
     + Reports the distribution's list of other distribution's
       being 'used' in the 'META6.json' file's list versus those actually 
       being 'used' in the 'bin', 'sbin', and 'rakumod' files.
+
+      Creates a new META6.json file with all dependencies in the 'depends'
+      array in alphabetical order. The file is named 'revised-META6.json'
+      for your viewing before substituting it for the existing file. 
     HERE
     exit;
 }
@@ -50,7 +54,7 @@ for @*ARGS {
     }
 }
 
-# get the META6.json contents
+# get the current META6.json contents
 my %meta = from-json "$repo-path/META6.json".IO.slurp;
 # the used modules need to be in one of:
 my %h-deps       = @(%meta<depends>).map({ $_ => True });
@@ -86,7 +90,6 @@ if $debug {
 my %used-modules;
 for @all -> $fil {
     say "Working file '$fil'";
-    #next;
     LINE: for $fil.IO.lines -> $line is copy {
         $line = strip-comment $line;
         next LINE unless $line ~~ /\S/;
@@ -101,11 +104,12 @@ for @all -> $fil {
             next LINE;
         }
 
-        # remove any semicolons
-        while $line ~~ /';'/ {
-            $line ~~ s/';'//;
-        }
         my $w2 = @words.shift;
+        # remove any semicolons
+        while $w2 ~~ /';'/ {
+            $w2 ~~ s/';'//;
+        }
+
         unless %used-modules{$w2}:exists {
             %used-modules{$w2} = 1; 
         }
