@@ -1,6 +1,8 @@
 #!/usr/bin/env raku
 
-use JSON::Tiny;
+use JSON::Fast;
+#use JSON::Tiny;
+
 use File::Find;
 use Text::Utils :strip-comment;
 
@@ -68,9 +70,12 @@ my @c3 = (%h-build-deps.keys (&) %h-test-deps.keys).keys;
 my $dups = @c1.elems + @c2.elems + @c3.elems;
 
 if $dups {
-    say "WARNING: Found $dups duplicate entries in the META6.json file."; 
-    say "         Please correct that before continuing.";
-    say "         Early exit...";
+    print q:to/HERE/;
+    WARNING: Found $dups duplicate depends entries in the 
+             META6.json file.
+             Please correct that before continuing.
+             Early exit...
+    HERE
     exit(1);
 }
 
@@ -117,8 +122,19 @@ for @all -> $fil {
 }
 
 # compare the two sets of hashes
+my %new-meta = %meta;
 for %used-modules.keys -> $m {
     unless %mods{$m}:exists {
-        say "add module $m to the META6.json file";
+        say "adding module $m to the revised META6.json file";
+        @(%new-meta<depends>).push: $m; 
     }
 }
+
+# try to sort the depends array
+@(%new-meta<depends>) .= sort;
+
+say "Revised META6.json:";
+say to-json %new-meta, :pretty, :sorted-keys;
+my $jfil = 'new-META6.json';
+spurt $jfil, to-json(%new-meta, :pretty, :sorted-keys);
+say "See file '$jfil'";
