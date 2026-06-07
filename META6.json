@@ -6,6 +6,7 @@
   "build-depends": [
   ],
   "depends": [
+    "JSON::Tiny"
   ],
   "description": "Providesca lint tool for Raku distro creation",
   "license": "Artistic-2.0",

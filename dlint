@@ -1,6 +1,6 @@
 #!/usr/bin/env raku
 
-#use JSON::Fast:Hyper;
+use JSON::Tiny;
 use File::Find;
 use Text::Utils :strip-comment;
 
@@ -25,9 +25,8 @@ if not @*ARGS {
 my $repo-path;
 my $debug = 0;
 
-my $nargs = @*ARGS.elems;
 for @*ARGS {
-    when $_.IO.e {
+    when /$_.IO.e {
         unless $repo-path.defined {
             $repo-path = $_.IO::Path;
             next;

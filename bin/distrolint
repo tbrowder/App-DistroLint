@@ -1,6 +1,6 @@
 #!/usr/bin/env raku
 
-#use JSON::Fast:Hyper;
+use JSON::Tiny;
 use File::Find;
 use Text::Utils :strip-comment;
 
@@ -25,11 +25,11 @@ if not @*ARGS {
 my $repo-path;
 my $debug = 0;
 
-my $nargs = @*ARGS.elems;
 for @*ARGS {
     when $_.IO.e {
         unless $repo-path.defined {
-            $repo-path = $_.IO::Path;
+            #$repo-path = $_.IO::Path;
+            $repo-path = $_.IO;
             next;
         }
         print qq:to/HERE/;
@@ -38,7 +38,7 @@ for @*ARGS {
         HERE
         exit(1);
     }
-    when /^ :i d / {
+    when /^ :i de / {
         ++$debug;
     }
     default {
@@ -78,27 +78,32 @@ my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
 my @fils2 = find :dir("$repo-path/bin"), :type('file'), :exclude(/\.git/);
 my @all   = @fils.append(@fils2);
 if $debug {
-    say $_ for @all;
+    say "DEBUG: Found files:";
+    say "  $_" for @all;
 }
 
 # search for used modules
 my %used-modules;
 for @all -> $fil {
     say "Working file '$fil'";
-    next;
-    for $fil.IO.lines -> $line is rw {
+    #next;
+    LINE: for $fil.IO.lines -> $line is copy {
         $line = strip-comment $line;
-        # remove any semicolons
-        while $line ~~ /';'/ {
-            $line ~~ s/';'//;
-        }
+        next LINE unless $line ~~ /\S/;
+
         # assume only one module is used per line
         my $module = "";
         my @words = $line.words;
         # the expected line is "use $module"
         my $w1 = @words.shift;
         unless $w1 eq 'use' {
-            say "ERROR: Unexpected leading word '$w1' instead of 'use'";
+            say "Not a 'use' line...skipping";
+            next LINE;
+        }
+
+        # remove any semicolons
+        while $line ~~ /';'/ {
+            $line ~~ s/';'//;
         }
         my $w2 = @words.shift;
         unless %used-modules{$w2}:exists {

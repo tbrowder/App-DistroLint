@@ -1,14 +1,18 @@
 unit module App::DistroLint;
 
+=finish
+
+use JSON::Tiny;
+
 sub to-json(
     Hash %hash
 ) is export {
-    Rakudo::Internals::to-json %hash;
+    Rakudo::Internals::JSON.to-json: %hash, :pretty, :sorted-keys;
 }
 
 sub from-json(
     Str $string
 ) is export {
-    Rakudo::Internals::from-json $string;
+    Rakudo::Internals::JSON.from-json: $string;
 }
 
