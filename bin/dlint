@@ -1,6 +1,8 @@
 #!/usr/bin/env raku
 
-use JSON::Tiny;
+use JSON::Fast;
+#use JSON::Tiny;
+
 use File::Find;
 use Text::Utils :strip-comment;
 
@@ -18,6 +20,10 @@ if not @*ARGS {
     + Reports the distribution's list of other distribution's
       being 'used' in the 'META6.json' file's list versus those actually 
       being 'used' in the 'bin', 'sbin', and 'rakumod' files.
+
+      Creates a new META6.json file with all dependencies in the 'depends'
+      array in alphabetical order. The file is named 'revised-META6.json'
+      for your viewing before substituting it for the existing file. 
     HERE
     exit;
 }
@@ -26,9 +32,10 @@ my $repo-path;
 my $debug = 0;
 
 for @*ARGS {
-    when /$_.IO.e {
+    when $_.IO.e {
         unless $repo-path.defined {
-            $repo-path = $_.IO::Path;
+            #$repo-path = $_.IO::Path;
+            $repo-path = $_.IO;
             next;
         }
         print qq:to/HERE/;
@@ -37,7 +44,7 @@ for @*ARGS {
         HERE
         exit(1);
     }
-    when /^ :i d / {
+    when /^ :i de / {
         ++$debug;
     }
     default {
@@ -49,7 +56,7 @@ for @*ARGS {
     }
 }
 
-# get the META6.json contents
+# get the current META6.json contents
 my %meta = from-json "$repo-path/META6.json".IO.slurp;
 # the used modules need to be in one of:
 my %h-deps       = @(%meta<depends>).map({ $_ => True });
@@ -63,9 +70,12 @@ my @c3 = (%h-build-deps.keys (&) %h-test-deps.keys).keys;
 my $dups = @c1.elems + @c2.elems + @c3.elems;
 
 if $dups {
-    say "WARNING: Found $dups duplicate entries in the META6.json file."; 
-    say "         Please correct that before continuing.";
-    say "         Early exit...";
+    print q:to/HERE/;
+    WARNING: Found $dups duplicate depends entries in the 
+             META6.json file.
+             Please correct that before continuing.
+             Early exit...
+    HERE
     exit(1);
 }
 
@@ -77,29 +87,34 @@ my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
 my @fils2 = find :dir("$repo-path/bin"), :type('file'), :exclude(/\.git/);
 my @all   = @fils.append(@fils2);
 if $debug {
-    say $_ for @all;
+    say "DEBUG: Found files:";
+    say "  $_" for @all;
 }
 
 # search for used modules
 my %used-modules;
 for @all -> $fil {
     say "Working file '$fil'";
-    next;
-    for $fil.IO.lines -> $line is rw {
+    LINE: for $fil.IO.lines -> $line is copy {
         $line = strip-comment $line;
-        # remove any semicolons
-        while $line ~~ /';'/ {
-            $line ~~ s/';'//;
-        }
+        next LINE unless $line ~~ /\S/;
+
         # assume only one module is used per line
         my $module = "";
         my @words = $line.words;
         # the expected line is "use $module"
         my $w1 = @words.shift;
         unless $w1 eq 'use' {
-            say "ERROR: Unexpected leading word '$w1' instead of 'use'";
+            say "Not a 'use' line...skipping";
+            next LINE;
         }
+
         my $w2 = @words.shift;
+        # remove any semicolons
+        while $w2 ~~ /';'/ {
+            $w2 ~~ s/';'//;
+        }
+
         unless %used-modules{$w2}:exists {
             %used-modules{$w2} = 1; 
         }
@@ -107,8 +122,19 @@ for @all -> $fil {
 }
 
 # compare the two sets of hashes
+my %new-meta = %meta;
 for %used-modules.keys -> $m {
     unless %mods{$m}:exists {
-        say "add module $m to the META6.json file";
+        say "adding module $m to the revised META6.json file";
+        @(%new-meta<depends>).push: $m; 
     }
 }
+
+# try to sort the depends array
+@(%new-meta<depends>) .= sort;
+
+say "Revised META6.json:";
+say to-json %new-meta, :pretty, :sorted-keys;
+my $jfil = 'new-META6.json';
+spurt $jfil, to-json(%new-meta, :pretty, :sorted-keys);
+say "See file '$jfil'";
