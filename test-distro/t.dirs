@@ -1,0 +1,4 @@
+resources
+resources/subdir
+resources/subdir/more.txt
+resources/some.txt
