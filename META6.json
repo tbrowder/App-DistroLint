@@ -8,7 +8,7 @@
   "depends": [
     "JSON::Tiny"
   ],
-  "description": "Providesca lint tool for Raku distro creation",
+  "description": "Provides a lint tool for Raku distro developers",
   "license": "Artistic-2.0",
   "name": "App::DistroLint",
   "perl": "6.d",

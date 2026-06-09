@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/tbrowder/Foo-Bar/actions/workflows/linux.yml/badge.svg)](https://github.com/tbrowder/Foo-Bar/actions) [![Actions Status](https://github.com/tbrowder/Foo-Bar/actions/workflows/macos.yml/badge.svg)](https://github.com/tbrowder/Foo-Bar/actions) [![Actions Status](https://github.com/tbrowder/Foo-Bar/actions/workflows/windows.yml/badge.svg)](https://github.com/tbrowder/Foo-Bar/actions)
+[![Actions Status](https://github.com/tbrowder/App-DistroLint/actions/workflows/linux.yml/badge.svg)](https://github.com/tbrowder/App-DistroLint/actions) [![Actions Status](https://github.com/tbrowder/App-DistroLint/actions/workflows/macos.yml/badge.svg)](https://github.com/tbrowder/App-DistroLint/actions) [![Actions Status](https://github.com/tbrowder/App-DistroLint/actions/workflows/windows.yml/badge.svg)](https://github.com/tbrowder/App-DistroLint/actions)
 
 NAME
 ====

@@ -1,3 +1,7 @@
+fix a good test-distro directory
+
+Ensure module adverbs are shown but only in the META6.json file
+
 check common errors
 ===================
 

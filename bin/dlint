@@ -1,8 +1,6 @@
 #!/usr/bin/env raku
 
 use JSON::Fast;
-#use JSON::Tiny;
-
 use File::Find;
 use Text::Utils :strip-comment;
 
@@ -34,7 +32,6 @@ my $debug = 0;
 for @*ARGS {
     when $_.IO.e {
         unless $repo-path.defined {
-            #$repo-path = $_.IO::Path;
             $repo-path = $_.IO;
             next;
         }
@@ -83,29 +80,52 @@ if $dups {
 my %mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
 
 # search the bin and rakumod files for used modules
+my @dirs = <bin sbin lib t xt>;
+my @allfils = [];
+for @dirs -> $dir {
+    next unless $dir.IO.d;
+    my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'giti|'.'precomp/);
+    @allfils.append: @fils;
+}
+
+if 0 or $debug {
+    say "DEBUG: found the following files of interest:";
+    say "  $_" for @allfils;
+    say "Early exit...";
+    exit;
+}
+
+
+=begin comment
 my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
 my @fils2 = find :dir("$repo-path/bin"), :type('file'), :exclude(/\.git/);
-my @all   = @fils.append(@fils2);
+my @fils3 = find :dir("$repo-path/sbin"), :type('file'), :exclude(/\.git/);
+my @all   = @fils.append(@fils2).append(@fils3);;
+=end comment
 if $debug {
     say "DEBUG: Found files:";
-    say "  $_" for @all;
+    say "  $_" for @allfils;
 }
 
 # search for used modules
 my %used-modules;
-for @all -> $fil {
-    say "Working file '$fil'";
+for @allfils -> $fil {
+    say "Working file '$fil'" if $debug;
+
     LINE: for $fil.IO.lines -> $line is copy {
         $line = strip-comment $line;
         next LINE unless $line ~~ /\S/;
 
         # assume only one module is used per line
+        my %result = parse-module-spec $line, :$debug;
+
+        =begin comment
         my $module = "";
         my @words = $line.words;
-        # the expected line is "use $module"
+        # the expected line is "use $module" (or "need" or "require")
         my $w1 = @words.shift;
-        unless $w1 eq 'use' {
-            say "Not a 'use' line...skipping";
+        unless $w1 ~~ /use|need|require/  {
+            say "Not a 'use (or 'need' or 'require')' line...skipping";
             next LINE;
         }
 
@@ -114,10 +134,13 @@ for @all -> $fil {
         while $w2 ~~ /';'/ {
             $w2 ~~ s/';'//;
         }
+        # handle ver, auth, api tags
+        if $w2 ~~ /':auth<' 
 
         unless %used-modules{$w2}:exists {
             %used-modules{$w2} = 1; 
         }
+        =end comment
     }
 }
 

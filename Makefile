@@ -3,4 +3,7 @@ bin/dlint: bin/distrolint
 	cp bin/distrolint bin/dlint
 
 go:
-	raku run -Ilib bin/dlint
+	raku -Ilib bin/dlint
+
+test:
+	touch

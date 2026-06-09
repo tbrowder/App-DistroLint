@@ -80,18 +80,36 @@ if $dups {
 my %mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
 
 # search the bin and rakumod files for used modules
+my @dirs = <bin sbin lib t xt>;
+my @allfils = [];
+for @dirs -> $dir {
+    next unless $dir.IO.d;
+    my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'giti|'.'precomp/);
+    @allfils.append: @fils;
+}
+
+if 0 or $debug {
+    say "DEBUG: found the following files of interest:";
+    say "  $_" for @allfils;
+    say "Early exit...";
+    exit;
+}
+
+
+=begin comment
 my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
 my @fils2 = find :dir("$repo-path/bin"), :type('file'), :exclude(/\.git/);
 my @fils3 = find :dir("$repo-path/sbin"), :type('file'), :exclude(/\.git/);
 my @all   = @fils.append(@fils2).append(@fils3);;
+=end comment
 if $debug {
     say "DEBUG: Found files:";
-    say "  $_" for @all;
+    say "  $_" for @allfils;
 }
 
 # search for used modules
 my %used-modules;
-for @all -> $fil {
+for @allfils -> $fil {
     say "Working file '$fil'" if $debug;
 
     LINE: for $fil.IO.lines -> $line is copy {
