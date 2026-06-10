@@ -2,7 +2,7 @@ use Test;
 
 use App::DistroLint;
 
-my $proc = run "distrolint", "test-distro".IO;
+my $proc = run "dlint", "test-distro".IO;
 
 
 done-testing;

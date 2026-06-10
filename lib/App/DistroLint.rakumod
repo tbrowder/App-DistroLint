@@ -1,5 +1,12 @@
 unit module App::DistroLint;
 
+# need a class to hold file error details
+class FileSpec is export {
+    has $path;
+    has @modules;
+    has %adverbs = False; # we expect adverbs only in the META6.json file
+}
+
 sub parse-module-spec(
     $line,
     :$debug,
@@ -55,7 +62,7 @@ sub parse-module-spec(
     }
 
     %result;
-}
+} # end of sub parse-module-spec(
 
 =finish
 

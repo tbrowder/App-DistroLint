@@ -1,6 +1,6 @@
 bin/dlint: bin/distrolint
 
-	cp bin/distrolint bin/dlint
+	cp bin/dlint bin/distrolint
 
 go:
 	raku -Ilib bin/dlint

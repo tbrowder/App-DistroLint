@@ -1,7 +1,7 @@
 unit class Foo::Bar:ver;
 
-use Known:ver<0.0.1>;
-use Unknown:ver<0.0.1>;
+use Alpha:ver<0.0.1>;
+use Bravo:ver<0.0.1>;
 
 
 

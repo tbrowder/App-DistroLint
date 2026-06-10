@@ -6,7 +6,8 @@
   "build-depends": [
     "MacOS::NativeLib"
   ],
-  "depends": [
+  "depends":
+    "Alpha"
   ],
   "description": "A module for foreign module testing for Mi6::Helper development",
   "license": "Artistic-2.0",
