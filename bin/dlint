@@ -1,6 +1,7 @@
 #!/usr/bin/env raku
 
 use JSON::Fast;
+
 use File::Find;
 use Text::Utils :strip-comment;
 
@@ -54,7 +55,7 @@ for @*ARGS {
 }
 
 # get the current META6.json contents
-my %meta = from-json "$repo-path/META6.json".IO.slurp;
+my $meta = from-json "$repo-path/META6.json".IO.slurp;
 # the used modules need to be in one of:
 my %h-deps       = @(%meta<depends>).map({ $_ => True });
 my %h-test-deps  = @(%meta<test-depends>).map({ $_ => True });

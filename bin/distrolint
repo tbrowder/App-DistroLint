@@ -1,6 +1,7 @@
 #!/usr/bin/env raku
 
 use JSON::Fast;
+
 use File::Find;
 use Text::Utils :strip-comment;
 
@@ -54,11 +55,11 @@ for @*ARGS {
 }
 
 # get the current META6.json contents
-my %meta = from-json "$repo-path/META6.json".IO.slurp;
+my $meta = from-json "$repo-path/META6.json".IO.slurp;
 # the used modules need to be in one of:
-my %h-deps       = @(%meta<depends>).map({ $_ => True });
-my %h-test-deps  = @(%meta<test-depends>).map({ $_ => True });
-my %h-build-deps = @(%meta<build-depends>).map({ $_ => True });
+my %h-deps       = @($meta<depends>).map({ $_ => True });
+my %h-test-deps  = @($meta<test-depends>).map({ $_ => True });
+my %h-build-deps = @($meta<build-depends>).map({ $_ => True });
 
 # check for dups in hashes
 my @c1 = (%h-deps.keys       (&) %h-test-deps.keys).keys;
@@ -145,11 +146,11 @@ for @allfils -> $fil {
 }
 
 # compare the two sets of hashes
-my %new-meta = %meta;
+my $new-meta = $meta;
 for %used-modules.keys -> $m {
     unless %mods{$m}:exists {
         say "adding module $m to the revised META6.json file";
-        @(%new-meta<depends>).push: $m; 
+        @($new-meta<depends>).push: $m; 
     }
 }
 
@@ -157,7 +158,7 @@ for %used-modules.keys -> $m {
 @(%new-meta<depends>) .= sort;
 
 say "Revised META6.json:";
-say to-json %new-meta, :pretty, :sorted-keys;
+say to-json $new-meta, :pretty, :sorted-keys;
 my $jfil = 'new-META6.json';
-spurt $jfil, to-json(%new-meta, :pretty, :sorted-keys);
+spurt $jfil, to-json($new-meta, :pretty, :sorted-keys);
 say "See file '$jfil'";
