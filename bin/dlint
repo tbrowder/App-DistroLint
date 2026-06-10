@@ -31,7 +31,7 @@ my $repo-path;
 my $debug = 0;
 
 for @*ARGS {
-    when $_.IO.e {
+    when $_.IO.d {
         unless $repo-path.defined {
             $repo-path = $_.IO;
             next;
@@ -42,7 +42,7 @@ for @*ARGS {
         HERE
         exit(1);
     }
-    when /^ :i de / {
+    when /^ :i d / {
         ++$debug;
     }
     default {
@@ -84,7 +84,7 @@ my %mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
 my @dirs = <bin sbin lib t xt>;
 my @allfils = [];
 for @dirs -> $dir {
-    next unless $dir.IO.d;
+    next unless "$repo-patg/$dir.IO.d;
     my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'git|'.'precomp/);
     @allfils.append: @fils;
 }
