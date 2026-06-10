@@ -85,7 +85,7 @@ my @dirs = <bin sbin lib t xt>;
 my @allfils = [];
 for @dirs -> $dir {
     next unless "$repo-path/$dir".IO.d;
-    my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'git|'.'precomp'/);
+    my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'git|'.'precomp/);
     @allfils.append: @fils;
 }
 
