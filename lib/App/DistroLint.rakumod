@@ -4,7 +4,7 @@ unit module App::DistroLint;
 class FileSpec is export {
     has $path;
     has @modules;
-    has %adverbs = False; # we expect adverbs only in the META6.json file
+    has %adverbs;
 }
 
 sub parse-module-spec(

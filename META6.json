@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-    "JSON::Tiny"
+    "JSON::Fast"
   ],
   "description": "Provides a lint tool for Raku distro developers",
   "license": "Artistic-2.0",

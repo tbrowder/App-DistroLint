@@ -155,7 +155,7 @@ for %used-modules.keys -> $m {
 }
 
 # try to sort the depends array
-@(%new-meta<depends>) .= sort;
+@($new-meta<depends>) .= sort;
 
 say "Revised META6.json:";
 say to-json $new-meta, :pretty, :sorted-keys;
