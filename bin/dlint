@@ -21,7 +21,7 @@ if not @*ARGS {
       being 'used' in the 'bin', 'sbin', and 'rakumod' files.
 
       Creates a new META6.json file with all dependencies in the 'depends'
-      array in alphabetical order. The file is named 'revised-META6.json'
+      array in alphabetical order. The file is named 'new-META6.json'
       for your viewing before substituting it for the existing file. 
     HERE
     exit;
@@ -85,7 +85,7 @@ my @dirs = <bin sbin lib t xt>;
 my @allfils = [];
 for @dirs -> $dir {
     next unless $dir.IO.d;
-    my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'giti|'.'precomp/);
+    my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'git|'.'precomp/);
     @allfils.append: @fils;
 }
 
@@ -96,13 +96,13 @@ if 0 or $debug {
     exit;
 }
 
-
 =begin comment
 my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
 my @fils2 = find :dir("$repo-path/bin"), :type('file'), :exclude(/\.git/);
 my @fils3 = find :dir("$repo-path/sbin"), :type('file'), :exclude(/\.git/);
-my @all   = @fils.append(@fils2).append(@fils3);;
+my @all   = @fils.append(@fils2).append(@fils3);
 =end comment
+
 if $debug {
     say "DEBUG: Found files:";
     say "  $_" for @allfils;
