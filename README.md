@@ -19,7 +19,7 @@ Running binary `distrolint` on a distribution repository can be very helpful dur
 
   * Reports the distribution's list of other distribution's being 'used' in the 'META6.json' file's list versus those actually being 'used' in the 'bin', 'sbin', 'rakumod', and test files.
 
-  * Detects module adverbs and recommends they only be used in the META6.json file
+  * Detects module adverbs and recommends they only be used in the META6.json file.
 
   * Detects duplicate entries of used modules.
 

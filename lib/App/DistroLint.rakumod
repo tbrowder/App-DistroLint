@@ -13,7 +13,7 @@ sub parse-module-spec(
     --> Hash
 ) is export {
 
-    my %result;
+    my %result := {};
     my $m = $line.match(
         /^ 
         \s* 
