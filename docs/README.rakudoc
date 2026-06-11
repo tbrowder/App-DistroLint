@@ -21,7 +21,12 @@ capabilities are:
 
 =item Reports the distribution's list of other distribution's
       being 'used' in the 'META6.json' file's list versus those actually 
-      being 'used' in the 'bin', 'sbin', and 'rakumod' files.
+      being 'used' in the 'bin', 'sbin', 'rakumod', and test files.
+
+=item Detects module adverbs and recommends they only be used in the
+      META6.json file
+
+=item Detects duplicate entries of used modules.
 
 Please file an issue if you would like other capabilities added.
 
