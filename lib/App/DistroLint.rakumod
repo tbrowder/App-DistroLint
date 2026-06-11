@@ -1,6 +1,6 @@
 unit module App::DistroLint;
 
-# need a class to hold file error details
+# need a class to hold file error details?
 class FileSpec is export {
     has $path;
     has @modules;
@@ -13,7 +13,8 @@ sub parse-module-spec(
     --> Hash
 ) is export {
 
-    my %result := {};
+    my %result;
+    # note the good chunk does NOT consider the closing semicolon
     my $m = $line.match(
         /^ 
         \s* 
@@ -29,10 +30,12 @@ sub parse-module-spec(
         $/ 
     );
 
+    # not a 'use' line
     return %result unless $m;
 
-    %result<command> = ~$m[0];
-    %result<module>  = ~$m[1];
+    # it is a 'use' line
+    %result<command> = ~$m[0]; # use|need|require
+    %result<module>  = ~$m[1]; # module name without adverbs
     %result<auth>    = Nil;
     %result<ver>     = Nil;
     %result<api>     = Nil;
