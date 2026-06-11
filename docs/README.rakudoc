@@ -24,7 +24,7 @@ capabilities are:
       being 'used' in the 'bin', 'sbin', 'rakumod', and test files.
 
 =item Detects module adverbs and recommends they only be used in the
-      META6.json file
+      META6.json file.
 
 =item Detects duplicate entries of used modules.
 
