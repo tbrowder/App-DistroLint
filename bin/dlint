@@ -125,16 +125,14 @@ for @allfils -> $fil {
         $line = strip-comment $line;
         next LINE unless $line ~~ /\S/;
 
-        # assume only one module is used per line for now, but could
-        # split on semicolons
-        my @lines2 = $line.split(';');
-        for @lines2 -> $line2 is copy 1 {
-            # remove semicolons
-            $line2 ~~ s/';'//;
-            $line2 .= trim;
+        # assume multiple modules are used on a single line
+        # replace  semicolons with spaces and split on words	
+        $line ~~ s:g/';'/\h/;
+        my @mods = $line.words;
+        for @mods -> $modstr is copy {
+            $modstr .= trim;
+            my %result = parse-module-spec $modstr, :$debug;
         }
-
-        my %result = parse-module-spec $line, :$debug;
 
         # check for dups: modules with the same module name in the same file
         
