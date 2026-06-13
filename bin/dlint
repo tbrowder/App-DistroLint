@@ -16,10 +16,10 @@ if not @*ARGS {
 
     Current actions:
 
-    + Reports the distribution's list of other distribution's
-      being 'used' in the 'META6.json' file's list versus those actually 
-      being 'used' in the 'bin', 'sbin', and 'rakumod' files.
-      See the README for more details.
+    + Reports the distribution's list of other distributions
+      being 'used' in the 'META6.json' file's list versus those 
+      actually being 'used' in that distro's files. See the README for 
+      more details.
 
       Creates a new META6.json file with all dependencies in the 'depends'
       array in alphabetical order. The file is named 'new-META6.json'
@@ -28,17 +28,20 @@ if not @*ARGS {
     exit;
 }
 
-my $repo-path;
 my $debug = 0;
 
-for @*ARGS {
+my $repo-path = @*ARGS.shift // "";
+unless $repo-path.IO.d {
+   die "confused";
+}
+
+LINE: for @*ARGS {
+
     when $_.IO.d {
-        unless $repo-path.defined {
-            $repo-path = $_.IO;
-            next;
-        }
         print qq:to/HERE/;
         FATAL: Multiple input paths detected.
+                 '$repo-path'
+                 '$_'
                Exiting...
         HERE
         exit(1);
@@ -81,7 +84,7 @@ if $dups {
 # combine the hashes
 my %mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
 
-# search the bin and rakumod files for used modules
+# search the bin, sbin, t, xt, and lib files for used modules
 my @dirs = <bin sbin lib t xt>;
 my @allfils = [];
 for @dirs -> $dir {
@@ -94,8 +97,10 @@ for @dirs -> $dir {
 if 0 or $debug {
     say "DEBUG: found the following files of interest:";
     say "  $_" for @allfils;
-    say "Early exit...";
-    exit;
+    if 0 {
+        say "Early exit...";
+        exit;
+    }
 }
 
 =begin comment
@@ -121,20 +126,45 @@ for @allfils -> $fil {
     my $line-number = 0;
     LINE: for $fil.IO.lines -> $line is copy {
         ++$line-number;
-
+        
         $line = strip-comment $line;
         next LINE unless $line ~~ /\S/;
 
         # assume multiple modules are used on a single line
         # replace  semicolons with spaces and split on words	
-        $line ~~ s:g/';'/\h/;
+        # note the line MUST start with use|need|require
+        next LINE unless { 
+            $line ~~ /^ \s* [use|need|require] / 
+        }
+
+        if $debug {
+            say "DEBUG: use line: '$line'";
+        }
+
+        my @mods = parse-use-line $line;
+        if 1 or $debug {
+            say "DEBUG: 'use' lines:";
+            say "  $_" for @mods;
+        }
+
+
+        =begin comment
+        $line ~~ s:g/';'/ /;
+        # now assemble line pieces in pairs
         my @mods = $line.words;
+        unless @mods.elems %% 2 { # is-even
+            say "FATAL: unrecognized line format:";
+            say "       $line";
+            exit;
+        }
+
         for @mods -> $modstr is copy {
             $modstr .= trim;
             my %result = parse-module-spec $modstr, :$debug;
         }
 
         # check for dups: modules with the same module name in the same file
+        =end comment
         
         =begin comment
         # it is a 'use' line
@@ -161,8 +191,8 @@ for %used-modules.keys -> $m {
 # try to sort the depends array
 @($new-meta<depends>) .= sort;
 
-say "Revised META6.json:";
+say "Revised META6.json for distro '$repo-path':";
 say to-json $new-meta, :pretty, :sorted-keys;
 my $jfil = 'new-META6.json';
 spurt $jfil, to-json($new-meta, :pretty, :sorted-keys);
-say "See file '$jfil'";
+say "See file '$jfil' for distro '$repo-path'.";

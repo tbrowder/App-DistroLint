@@ -1,10 +1,51 @@
 unit module App::DistroLint;
 
+use Text::Utils :strip-comment;
+
 # need a class to hold file error details?
 class FileSpec is export {
     has $path;
     has @modules;
     has %adverbs;
+}
+
+sub parse-use-line(
+    $line is copy,
+    :$debug,
+    --> List
+) is export {
+    $line = strip-comment $line;
+    unless $line ~~ /\S/ {
+        die qq:to/HERE/;
+        FATAL: Unexpected empty line...
+        HERE
+    }
+
+    my @pieces = $line.split(';');
+    my $first  = @pieces.head;
+    unless $line ~~ /^ [use|require|need]/ {
+        die qq:to/HERE/;
+        FATAL: Unexpected line: '$line'
+        HERE
+    }
+
+    =begin comment
+    if $debug {
+        say "DEBUG: input 'use' line: $line";
+        say "  pieces:";
+        say "  $_" for @pieces;
+    }
+    =end comment
+
+    my @new-pieces;
+    # fix lines with export tags
+    for @pieces -> $piece {
+        my @w = $piece.words;
+        my $line = @w[0, 1].join(" ");
+        @new-pieces.push: $line;
+    }
+
+    @new-pieces;
 }
 
 sub parse-module-spec(
