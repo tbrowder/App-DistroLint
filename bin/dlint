@@ -32,7 +32,7 @@ my $debug = 0;
 
 my $repo-path = @*ARGS.shift // "";
 unless $repo-path.IO.d {
-   die "confused";
+   die "confused with \$repo-path: '$repo-path'";
 }
 
 LINE: for @*ARGS {
@@ -97,8 +97,8 @@ for @dirs -> $dir {
 if 0 or $debug {
     say "DEBUG: found the following files of interest:";
     say "  $_" for @allfils;
-    if 0 {
-        say "Early exit...";
+    if 1 {
+        say "DEBUG: Early exit...";
         exit;
     }
 }

@@ -21,9 +21,14 @@ sub parse-use-line(
         HERE
     }
 
-    my @parts = $s.split(';').map(*.trim).grep(*.chars);
+    my @parts = $line.split(';').map(*.trim).grep(*.chars);
     # note prev op will NOT clean multiple white spaces
-    # do it this way
+    # do that this way
+    for @parts.kv -> $i, $part is copy {
+        $part = $part.words.join(" ");
+        say "part $i: '$part'";
+        @parts[$i] = $part;
+    }
     
     my $first = @parts.head;
     unless $line ~~ /^ [use|require|need]/ {
@@ -40,15 +45,15 @@ sub parse-use-line(
     }
     =end comment
 
-    my @new-pieces;
+    my @new-parts;
     # fix lines with export tags
-    for @pieces -> $piece {
-        my @w = $piece.words;
+    for @parts -> $part {
+        my @w = $part.words;
         my $line = @w[0, 1].join(" ");
-        @new-pieces.push: $line;
+        @new-parts.push: $line;
     }
 
-    @new-pieces;
+    @new-parts;
 }
 
 sub parse-module-spec(
