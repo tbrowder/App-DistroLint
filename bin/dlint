@@ -118,7 +118,7 @@ if $debug {
 # search for used modules
 my %used-modules;
 my %dups;
-for @allfils -> $fil {
+FILE: for @allfils -> $fil {
     say "Working file '$fil'" if $debug;
 
     # a dup would look like:
@@ -133,8 +133,9 @@ for @allfils -> $fil {
         # assume multiple modules are used on a single line
         # replace  semicolons with spaces and split on words	
         # note the line MUST start with use|need|require
-        next LINE unless { 
-            $line ~~ /^ \s* [use|need|require] / 
+        next LINE unless $line ~~ /^ \s* [use|need|require] \h /;
+        if $line ~~ /^ \s* use \h+ Test \h* ';' / { 
+            next LINE;
         }
 
         if $debug {
@@ -146,7 +147,6 @@ for @allfils -> $fil {
             say "DEBUG: 'use' lines:";
             say "  $_" for @mods;
         }
-
 
         =begin comment
         $line ~~ s:g/';'/ /;

@@ -33,7 +33,8 @@ sub parse-use-line(
     my $first = @parts.head;
     unless $line ~~ /^ [use|require|need]/ {
         die qq:to/HERE/;
-        FATAL: Unexpected line: '$line'
+        FATAL: Unexpected line without leading 'use|need|require': 
+                 '$line'
         HERE
     }
 
