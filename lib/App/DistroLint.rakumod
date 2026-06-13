@@ -21,8 +21,11 @@ sub parse-use-line(
         HERE
     }
 
-    my @pieces = $line.split(';');
-    my $first  = @pieces.head;
+    my @parts = $s.split(';').map(*.trim).grep(*.chars);
+    # note prev op will NOT clean multiple white spaces
+    # do it this way
+    
+    my $first = @parts.head;
     unless $line ~~ /^ [use|require|need]/ {
         die qq:to/HERE/;
         FATAL: Unexpected line: '$line'
