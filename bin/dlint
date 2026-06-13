@@ -134,6 +134,8 @@ FILE: for @allfils -> $fil {
         # replace  semicolons with spaces and split on words	
         # note the line MUST start with use|need|require
         next LINE unless $line ~~ /^ \s* [use|need|require] \h /;
+
+        # ignore use Test since it's always available as part of Raku
         if $line ~~ /^ \s* use \h+ Test \h* ';' / { 
             next LINE;
         }
