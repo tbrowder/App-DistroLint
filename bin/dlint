@@ -145,26 +145,26 @@ FILE: for @allfils -> $fil {
         }
 
         my @mods = parse-use-line $line;
-        if 1 or $debug {
+        if 0 or $debug {
             say "DEBUG: 'use' lines:";
             say "  $_" for @mods;
         }
 
         =begin comment
-        $line ~~ s:g/';'/ /;
-        # now assemble line pieces in pairs
-        my @mods = $line.words;
+        # parse-use-line takes care of this
         unless @mods.elems %% 2 { # is-even
-            say "FATAL: unrecognized line format:";
+            say "FATAL: unrecognized line format (expected two parts):";
             say "       $line";
             exit;
         }
+        =end comment
 
         for @mods -> $modstr is copy {
             $modstr .= trim;
             my %result = parse-module-spec $modstr, :$debug;
         }
 
+        =begin comment
         # check for dups: modules with the same module name in the same file
         =end comment
         

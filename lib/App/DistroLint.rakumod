@@ -23,7 +23,7 @@ sub parse-use-line(
 
     my @parts = $line.split(';').map(*.trim).grep(*.chars);
     # note prev op will NOT clean multiple white spaces
-    # do that this way
+    # so do that this way
     for @parts.kv -> $i, $part is copy {
         $part = $part.words.join(" ");
         say "part $i: '$part'";
@@ -84,8 +84,7 @@ sub parse-module-spec(
     return %result unless $m;
 
     # it is a 'use' line
-    %result<command> = ~$m[0]; # use|need|require
-    %result<module>  = ~$m[1]; # module name without adverbs
+    %result<command> = ~$m[0]; # use|need|require %result<module>  = ~$m[1]; # module name without adverbs
     %result<auth>    = Nil;
     %result<ver>     = Nil;
     %result<api>     = Nil;
