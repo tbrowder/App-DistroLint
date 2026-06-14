@@ -4,10 +4,6 @@ use App::DistroLint;
 
 my $txt = q:to/HERE/;
 use JSON::Fast;
-
-if not @*ARGS {
-}
-
 HERE
 
 for $txt.lines.kv -> $i, $line is copy {
