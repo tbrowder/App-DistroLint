@@ -3,7 +3,7 @@ use Test;
 use App::DistroLint;
 
 my $txt = q:to/HERE/;
-use Foo;
+use JSON::Fast;
 
 if not @*ARGS {
 }

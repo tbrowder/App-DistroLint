@@ -21,21 +21,29 @@ sub parse-use-line(
         HERE
     }
 
-    my @parts = $line.split(';').map(*.trim).grep(*.chars);
+    my @modlines = $line.split(';').map(*.trim).grep(*.chars);
     # note prev op will NOT clean multiple white spaces
     # so do that this way
-    for @parts.kv -> $i, $part is copy {
-        $part = $part.words.join(" ");
-        say "part $i: '$part'";
-        @parts[$i] = $part;
-    }
-    
-    my $first = @parts.head;
-    unless $line ~~ /^ [use|require|need]/ {
-        die qq:to/HERE/;
-        FATAL: Unexpected line without leading 'use|need|require': 
-                 '$line'
-        HERE
+    for @modlines.kv -> $i, $modline is copy {
+
+        unless $modline ~~ /^ [use|require|need]/ {
+            die qq:to/HERE/;
+            FATAL: Unexpected line without leading 'use|need|require': 
+                     '$modline'
+            HERE
+        }
+
+        # now split again into parts
+        my @parts = $modline.words[0..1];
+        for @parts.kv -> $j, $part is copy {
+             # part 0 is use|need|require
+             # part 1 is the module name
+             # additional parts are export tags and will be ignored
+        }
+        $modline = @parts[0..1].join(" ");
+        @modlines[$i] = $modline;
+
+        say "modline $i: '$modline'";
     }
 
     =begin comment
@@ -46,6 +54,8 @@ sub parse-use-line(
     }
     =end comment
 
+    @modlines;
+    =begin comment
     my @new-parts;
     # fix lines with export tags
     for @parts -> $part {
@@ -53,9 +63,10 @@ sub parse-use-line(
         my $line = @w[0, 1].join(" ");
         @new-parts.push: $line;
     }
-
     @new-parts;
-}
+    =end comment
+
+} # end of sub parse-use-line(
 
 sub parse-module-spec(
     $line,

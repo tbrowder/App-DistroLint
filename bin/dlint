@@ -194,7 +194,7 @@ for %used-modules.keys -> $m {
 @($new-meta<depends>) .= sort;
 
 say "Revised META6.json for distro '$repo-path':";
-say to-json $new-meta, :pretty, :sorted-keys;
+#say to-json $new-meta, :pretty, :sorted-keys;
 my $jfil = 'new-META6.json';
 spurt $jfil, to-json($new-meta, :pretty, :sorted-keys);
 say "See file '$jfil' for distro '$repo-path'.";

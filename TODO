@@ -1,6 +1,9 @@
-fix a good test-distro directory
+Fix a good test-distro directory.
 
-Ensure module adverbs are shown but only in the META6.json file
+Ensure module adverbs are shown but only in the META6.json file.
+
+Provide a way for the linter to ignore certain subdirs
+such as those used herein.
 
 check common errors
 ===================
