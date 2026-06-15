@@ -60,15 +60,16 @@ LINE: for @*ARGS {
 
 # get the current META6.json contents
 my $meta = from-json "$repo-path/META6.json".IO.slurp;
-# the used modules need to be in one of:
-my %h-deps       = @($meta<depends>).map({ $_ => True });
-my %h-test-deps  = @($meta<test-depends>).map({ $_ => True });
-my %h-build-deps = @($meta<build-depends>).map({ $_ => True });
+# the used modules need to be in one of three arrays:
+my @h-deps       = @($meta<depends>); #.mapik({ $_ => True });
+my @h-test-deps  = @($meta<test-depends>); #.map({ $_ => True });
+my @h-build-deps = @($meta<build-depends>); #.map({ $_ => True });
 
-# check for dups in hashes
-my @c1 = (%h-deps.keys       (&) %h-test-deps.keys).keys;
-my @c2 = (%h-deps.keys       (&) %h-build-deps.keys).keys;
-my @c3 = (%h-build-deps.keys (&) %h-test-deps.keys).keys;
+# check for dups in the arrays
+# make a test for these
+my @c1 = (@h-deps       (&) @h-test-deps);
+my @c2 = (@h-deps       (&) @h-build-deps);
+my @c3 = (@h-build-deps (&) @h-test-deps);
 my $dups = @c1.elems + @c2.elems + @c3.elems;
 
 if $dups {
@@ -81,11 +82,14 @@ if $dups {
     exit(1);
 }
 
-# combine the hashes
-my %mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
+# combine the depends arrays
+my %dep-mods = %(|%h-deps, |%h-test-deps, |%h-build-deps);
+# get the provided modules
+my @provided-modules = r(
 
 # search the bin, sbin, t, xt, and lib files for used modules
 my @dirs = <bin sbin lib t xt>;
+# 
 my @allfils = [];
 for @dirs -> $dir {
     next unless "$repo-path/$dir".IO.d;

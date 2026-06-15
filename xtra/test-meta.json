@@ -1,0 +1,36 @@
+{
+  "auth": "zef:tbrowder",
+  "authors": [
+    "Tom Browder"
+  ],
+  "depends": [
+    "Foo",
+    "JSON::Fast"
+  ],
+  "build-depends": [
+    "Foo",
+    "Bar",
+    "Bar"
+  ],
+  "test-depends": [
+    "Foo",
+    "Bar",
+    "JSON::Fast"
+  ],
+  "description": "Provides a lint tool for Raku distro developers",
+  "license": "Artistic-2.0",
+  "name": "App::DistroLint",
+  "perl": "6.d",
+  "provides": {
+    "Baz::Zap": "lib/Baz/Zap.rakumod",
+    "Baz::Pop": "lib/Baz/Pop.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "https://github.com/tbrowder/App-DistroLint.git",
+  "tags": [
+    "lint distribution META6 dlint distrolint"
+  ],
+  "version": "0.0.1"
+}
+
