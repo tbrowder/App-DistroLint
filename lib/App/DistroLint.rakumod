@@ -70,4 +70,5 @@ sub parse-line(Str $line --> Array) {
     }
 
     return @deps;
+}
 

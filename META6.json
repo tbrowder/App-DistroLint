@@ -13,7 +13,8 @@
   "name": "App::DistroLint",
   "perl": "6.d",
   "provides": {
-    "App::DistroLint": "lib/App/DistroLint.rakumod"
+    "App::DistroLint": "lib/App/DistroLint.rakumod",
+    "App::OriginalDistroLint": "lib/App/OriginalDistroLint.rakumod"
   },
   "resources": [
   ],
