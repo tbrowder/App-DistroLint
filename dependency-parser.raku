@@ -1,26 +1,4 @@
-unit module App::DistroLint;
-
-=begin comment
-
-Raku Dependency Parser Example
-
-Contents:
-- dependency-parser.raku
-
-Parses dependency statements of the form:
-
-    use Module::Name:auth<sue>:api<3>:ver<0.1>;
-    need Other::Module;
-    require Third::Module:ver<1.2>;
-
-Multiple statements may appear on a line separated by semicolons.
-
-The parser returns a normalized key in canonical order:
-    Module::Name|auth=sue|api=3|ver=0.1
-
-=end comment
-
-use Text::Utils :strip-comment;
+#!/usr/bin/env raku
 
 my regex Verb   { use | need | require }
 my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
@@ -70,4 +48,4 @@ sub parse-line(Str $line --> Array) {
     }
 
     return @deps;
-
+}
