@@ -23,10 +23,10 @@ capabilities are:
       being 'used' in the 'META6.json' file's list versus those actually 
       being 'used' in the 'bin', 'sbin', 'rakumod', and test files.
 
+=item Detects duplicate entries of used modules.
+
 =item Detects module adverbs and recommends they only be used in the
       META6.json file.
-
-=item Detects duplicate entries of used modules.
 
 Please file an issue if you would like other capabilities added.
 

@@ -35,8 +35,6 @@ my $common = Set(@deps) (&) Set(@t-deps);
 my $cmn =  $common.keys.sort.join(" ");
 is $cmn, "Foo JSON::Fast";
 
-
-
 done-testing;
 
 
