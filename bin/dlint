@@ -164,7 +164,7 @@ FILE: for @allfils -> $fil {
         $line = strip-comment $line;
         next LINE unless $line ~~ /\S/;
 
-        # assume multiple modules are used on a single line
+        # assume multiple modules may be used on a single line
         # replace  semicolons with spaces and split on words	
         # note the line MUST start with use|need|require
         next LINE unless $line ~~ /^ \s* [use|need|require] \h /;
