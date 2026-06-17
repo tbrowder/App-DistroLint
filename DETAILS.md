@@ -1,0 +1,17 @@
+DETAILS
+
+Known data are collected from the META6.json file and checked for duplicate
+names and other errors.
+
+All files in the lib, bin, sbin, t, and xt directories are searched for
+files which 'use', 'need', or 'require' modules and each line which does is
+added to a collection to be processed and searched for errors.
+
+The original collection is a list of file paths containing one or more of
+those lines. The collection is processed into a hash keyed by module names
+and its value is a list of using paths and other attributes. For example:
+
+TODO UPDATE WITH CURRENT CODE IN LIB
+
+    my %modules<Foo><paths>[$path1, $path2];
+

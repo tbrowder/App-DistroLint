@@ -13,6 +13,8 @@ The original collection is a list of file paths containing one or more of those 
 The collection is processed into a hash keyed by module names and its value is a list
 of using paths and other attributes. For example:
 
+B<TODO UPDATE WITH CURRENT CODE IN LIB>
+
 =begin code
 my %modules<Foo><paths>[$path1, $path2];
 =end code
