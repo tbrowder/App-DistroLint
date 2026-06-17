@@ -16,14 +16,22 @@ if not @*ARGS {
 
     Current actions:
 
-    + Reports the distribution's list of other distributions
-      being 'used' in the 'META6.json' file's list versus those 
-      actually being 'used' in that distro's files. See the README for 
-      more details.
+    + Reports any external distributions being 'used' but
+      not listed in the 'META6.json' file.
 
-      Creates a new META6.json file with all dependencies in the 'depends'
-      array in alphabetical order. The file is named 'new-META6.json'
+    * Reports any duplicates in the 'META6.json' file or
+      any of the 'using' files.
+
+    * Reports any adverbs being improperly used in 'using' files
+      and ensures the adverbs found are properly
+      listed in the corrected 'META6.json' file.
+
+      The new file is named 'new-META6.json'
       for your viewing before substituting it for the existing file. 
+
+      Other notes and comments are liste in file 'LintNotes.txt'
+      (which is only created if necessary).
+
     HERE
     exit;
 }
