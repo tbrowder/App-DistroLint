@@ -29,7 +29,7 @@ if not @*ARGS {
       The new file is named 'new-META6.json'
       for your viewing before substituting it for the existing file. 
 
-      Other notes and comments are liste in file 'LintNotes.txt'
+      Other notes and comments are listed in file 'LintNotes.txt'
       (which is only created if necessary).
 
     HERE
@@ -186,7 +186,7 @@ FILE: for @allfils -> $fil {
             say "DEBUG: use line: '$line'";
         }
 
-        my @mods = parse-use-line $line;
+        my @mods = parse-dependency $line;
         if 0 or $debug {
             say "DEBUG: 'use' lines:";
             say "  $_" for @mods;
@@ -209,6 +209,8 @@ FILE: for @allfils -> $fil {
         =end comment
     }
 }
+
+=finish
 
 # look at the quality issues of the modules found
 

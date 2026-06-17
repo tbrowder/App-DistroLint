@@ -23,10 +23,11 @@ The parser returns a normalized key in canonical order:
 use Text::Utils :strip-comment;
 
 my regex Verb   { use | need | require }
-my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
+my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* 
+                   [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
 my regex Adv    { ':' $<name>=(auth|api|ver) '<' $<value>=[ <-[>]>+ ] '>' }
 
-sub parse-dependency(Str $text --> Hash) {
+sub parse-dependency(Str $text --> Hash) is export {
     my $m = $text ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
 
     return %() unless $m;
@@ -58,7 +59,7 @@ sub parse-dependency(Str $text --> Hash) {
     return %dep;
 }
 
-sub parse-line(Str $line --> Array) {
+sub parse-line(Str $line --> Array) is export {
     my @deps;
 
     for $line.split(';') -> $part {
