@@ -27,7 +27,25 @@ my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
                    [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
 my regex Adv    { ':' $<name>=(auth|api|ver) '<' $<value>=[ <-[>]>+ ] '>' }
 
-sub parse-dependency(Str $text --> Hash) is export {
+class Dependency is export {
+    has Str $.file;
+    has Int $.line-number;
+    
+    has Str $.statement; # the original use string 
+    
+    has Str $.command; # use, require, or need
+
+    has Str $.auth is rw;
+    has Str $.api  is rw;
+    has Str $.ver  is rw;
+  
+}
+
+sub parse-dependency(
+    Str $text, 
+    :$debug,
+    --> Hash
+) is export {
     my $m = $text ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
 
     return %() unless $m;
@@ -59,10 +77,16 @@ sub parse-dependency(Str $text --> Hash) is export {
     return %dep;
 }
 
-sub parse-line(Str $line --> Array) is export {
+sub parse-line(
+    Str $line,
+    :$debug,
+     --> Array
+) is export {
     my @deps;
 
-    for $line.split(';') -> $part {
+    for $line.split(';') -> $part is copy {
+        $part .= trim;
+        next unless $part.chars;
         my %dep = parse-dependency($part);
 
         if %dep.elems {

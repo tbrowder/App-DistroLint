@@ -125,6 +125,7 @@ my @known-dep-mods = @(|@h-deps, |@h-test-deps, |@h-build-deps);
 # get the provided modules
 my %provided-modules = %($meta<provided>);
 
+# now search all files
 # search the bin, sbin, t, xt, and lib files for used modules
 my @dirs = <bin sbin lib t xt>;
 # 
@@ -157,9 +158,10 @@ if $debug {
     say "  $_" for @allfils;
 }
 
-# search for used modules
+# search for used modules in @allfiles
 my %used-modules;
 my %dups;
+
 FILE: for @allfils -> $fil {
     say "Working file '$fil'" if $debug;
 
@@ -186,16 +188,32 @@ FILE: for @allfils -> $fil {
             say "DEBUG: use line: '$line'";
         }
 
-        my @mods = parse-dependency $line;
-        if 0 or $debug {
-            say "DEBUG: 'use' lines:";
-            say "  $_" for @mods;
+        for $line.split(';') -> $stmt {
+            my %results = parse-dependency $stmt;
+            if %results.elems {
+                # check for dups in the deps arrays
+                for %deps.kv -> $k, $v {
+                }
+            }
+            else {
+                say "Invalid dependency statemenr: $stmt on line $line-num";
+            }
         }
 
+
+        =begin comment
+        if 0 or $debug {
+            say "DEBUG: 'use' lines:";
+            say "  $_" for %deps.kv;
+        }
+        =end comment
+
+        =begin comment
         for @mods -> $modstr is copy {
             $modstr .= trim;
             my %result = parse-module-spec $modstr, :$debug;
         }
+        =end comment
 
         # check for dups: modules with the same module name in the same file
         
@@ -210,7 +228,7 @@ FILE: for @allfils -> $fil {
     }
 }
 
-=finish
+#=finish
 
 # look at the quality issues of the modules found
 
