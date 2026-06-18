@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-    "JSON::Fast"
+    "JSON::Fast:auth<zef:blah>"
   ],
   "description": "Provides a lint tool for Raku distro developers",
   "license": "Artistic-2.0",

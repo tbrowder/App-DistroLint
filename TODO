@@ -1,3 +1,4 @@
+Add a check for used modules actually availability
 See lizmat's module Identities::Utils;
 
 Ignore distro-provided uses for depends arrays.
