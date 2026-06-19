@@ -1,5 +1,8 @@
-Add a check for used modules actually availability
-See lizmat's module Identities::Utils;
+Add a check for used modules' actual availability.
+See lizmat's module Identities::Utils.
+
+Note a test I did proved that the module specification 
+requested MUST be in the canonical order 'ver', 'auth', 'api'.
 
 Ignore distro-provided uses for depends arrays.
 
