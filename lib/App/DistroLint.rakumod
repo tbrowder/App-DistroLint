@@ -39,6 +39,16 @@ class Dependency is export {
     has Str $.ver  is rw;
     has Str $.auth is rw;
     has Str $.api  is rw;
+
+    method spec(--> Str) {
+        my $spec = $.module;
+        $spec ~= ":ver<{}>"  if $ver.defined;
+        $spec ~= ":auth<{}>" if $auth.defined;
+        $spec ~= ":api<{}>"  if $api.defined;
+
+        $spec
+    }
+
 }
 
 class DependencyError is export {

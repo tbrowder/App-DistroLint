@@ -1,5 +1,5 @@
 use Test;
-use Your::Module::Name;
+use App::DistroLint;
 
 subtest 'valid single dependency statements' => {
     my $dep = parse-dependency-statement(

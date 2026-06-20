@@ -1,5 +1,5 @@
 use Test;
-use Your::Module::Name;
+use App::DistroLint;
 
 subtest 'duplicate adverbs are errors' => {
     my $err = parse-dependency-statement(

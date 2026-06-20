@@ -1,5 +1,5 @@
 use Test;
-use Your::Module::Name;
+use App::DistroLint;
 
 my SetHash %depends;
 my SetHash %test-depends;

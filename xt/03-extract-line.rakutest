@@ -1,5 +1,5 @@
 use Test;
-use Your::Module::Name;
+use App::DistroLint;
 
 subtest 'multiple statements on one physical line' => {
     my $line = 'use Foo::Bar; need Baz::Qux:ver<1.2>; require Alpha::Beta';
