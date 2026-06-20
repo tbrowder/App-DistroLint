@@ -23,16 +23,16 @@ The parser returns a normalized key in canonical order:
 use Text::Utils :strip-comment;
 
 my regex Verb   { use | need | require }
-my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* 
+my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
                    [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
 my regex Adv    { ':' $<name>=(ver|auth|api) '<' $<value>=[ <-[>]>+ ] '>' }
 
 class Dependency is export {
     has Str $.file;
     has Int $.line-number;
-    
-    has Str $.statement; # the original use string 
-    
+
+    has Str $.statement; # the original use string
+
     has Str $.command; # use, require, or need
     has Str $.module;  # bare module name
 
@@ -87,7 +87,7 @@ sub dist-status(
 
     # Check whether fez can find it in the ecosystem
     my $p2 = run 'zef', 'info', $spec, :out, :err;
-    
+
     if $p2.exitcode == 0 {
         $in-fez = True;
     }
@@ -100,13 +100,15 @@ sub dist-status(
 
 }
 
-sub parse-dependency(
-    Str $text, 
+sub parse-dependency-statement(
+    Str $statement,
+    Str $file!,
+    Int $line-number!,
     :$debug,
     --> Hash
 ) is export {
     #                    use|need|require
-    my $m = $text ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
+    my $m = $statement ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
 
     return %() unless $m;
 
@@ -147,7 +149,7 @@ sub parse-line(
     for $line.split(';') -> $part is copy {
         $part .= trim;
         next unless $part.chars;
-        my %dep = parse-dependency($part);
+        my %dep = parse-dependency-statement($part);
 
         if %dep.elems {
             @deps.push: %dep;
@@ -194,7 +196,7 @@ sub write-new-meta(
     $meta<test-depends>  = @test-depends;
     $meta<build-depends> = @build-depends;
 =end comment
- 
+
     my SetHash %new-depends;
     my SetHash %new-build;
     my SetHash %new-test;
@@ -220,7 +222,7 @@ sub write-new-meta(
     }
 
     # report what was removed
-    
+
 =begin comment
     my $out = $meta-path.parent.add('new-META6.json');
     $out.spurt(to-json($meta, :sorted-keys));
@@ -228,4 +230,3 @@ sub write-new-meta(
     True;
 =end comment
 }
-
