@@ -1,0 +1,41 @@
+use Test;
+use Your::Module::Name;
+
+my @deps =
+    Dependency.new(
+        :file<lib/Foo.rakumod>,
+        :line-number(1),
+        :statement<use Runtime::Dep>,
+        :command<use>,
+        :module<Runtime::Dep>,
+    ),
+    Dependency.new(
+        :file<bin/foo>,
+        :line-number(2),
+        :statement<use App::Dep>,
+        :command<use>,
+        :module<App::Dep>,
+    ),
+    Dependency.new(
+        :file<t/basic.rakutest>,
+        :line-number(3),
+        :statement<use Test::Dep>,
+        :command<use>,
+        :module<Test::Dep>,
+    ),
+    Dependency.new(
+        :file<Build.rakumod>,
+        :line-number(4),
+        :statement<use Build::Dep>,
+        :command<use>,
+        :module<Build::Dep>,
+    );
+
+my %sets = classify-dependencies(@deps);
+
+ok %sets<depends>{'Runtime::Dep'}:exists;
+ok %sets<depends>{'App::Dep'}:exists;
+ok %sets<test-depends>{'Test::Dep'}:exists;
+ok %sets<build-depends>{'Build::Dep'}:exists;
+
+done-testing;

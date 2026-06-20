@@ -1,0 +1,77 @@
+use Test;
+use Your::Module::Name;
+
+subtest 'installed dependency' => {
+    my $runner = sub (*@cmd) {
+        if @cmd[1] eq '--installed' {
+            return %(
+                exitcode => 0,
+                out => "JSON::Fast:ver<0.19>\n",
+                err => '',
+            );
+        }
+
+        die 'zef info should not be called for installed module';
+    };
+
+    my $status = zef-status('JSON::Fast', :$runner);
+
+    ok $status.installed;
+    ok $status.available;
+};
+
+subtest 'available but not installed' => {
+    my $runner = sub (*@cmd) {
+        if @cmd[1] eq '--installed' {
+            return %(
+                exitcode => 0,
+                out => "Other::Module\n",
+                err => '',
+            );
+        }
+
+        if @cmd[1] eq 'info' {
+            return %(
+                exitcode => 0,
+                out => "JSON::Fast info here\n",
+                err => '',
+            );
+        }
+
+        die 'unexpected zef command';
+    };
+
+    my $status = zef-status('JSON::Fast', :$runner);
+
+    nok $status.installed;
+    ok $status.available;
+};
+
+subtest 'missing dependency' => {
+    my $runner = sub (*@cmd) {
+        if @cmd[1] eq '--installed' {
+            return %(
+                exitcode => 0,
+                out => "Other::Module\n",
+                err => '',
+            );
+        }
+
+        if @cmd[1] eq 'info' {
+            return %(
+                exitcode => 1,
+                out => '',
+                err => 'not found',
+            );
+        }
+
+        die 'unexpected zef command';
+    };
+
+    my $status = zef-status('Missing::Module', :$runner);
+
+    nok $status.installed;
+    nok $status.available;
+};
+
+done-testing;
