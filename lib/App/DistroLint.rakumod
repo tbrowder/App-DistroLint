@@ -42,9 +42,9 @@ class Dependency is export {
 
     method spec(--> Str) {
         my $spec = $.module;
-        $spec ~= ":ver<{}>"  if $ver.defined;
-        $spec ~= ":auth<{}>" if $auth.defined;
-        $spec ~= ":api<{}>"  if $api.defined;
+        $spec ~= ":ver<{$spec}>"  if $!ver.defined;
+        $spec ~= ":auth<{$spec}>" if $!auth.defined;
+        $spec ~= ":api<{$spec}>"  if $!api.defined;
 
         $spec
     }
