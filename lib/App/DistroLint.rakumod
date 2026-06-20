@@ -57,7 +57,7 @@ class DependencyError is export {
 class DistStatus is export {
 }
 
-sub dist-status(
+sub zef-status( # was: dist-status(
     Str $spec,
     :$debug,
     --> DistStatus
@@ -100,7 +100,7 @@ sub dist-status(
 
 }
 
-sub parse-dependency-statement(
+sub parse-dependency-statement( # was parse-module-spec
     Str $statement,
     Str $file!,
     Int $line-number!,
