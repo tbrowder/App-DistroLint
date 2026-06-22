@@ -21,6 +21,7 @@ The parser returns a normalized key in canonical order:
 =end comment
 
 use Text::Utils :strip-comment;
+use JSON::Fast;
 
 my regex Verb   { use | need | require }
 my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
@@ -42,9 +43,9 @@ class Dependency is export {
 
     method spec(--> Str) {
         my $spec = $.module;
-        $spec ~= ":ver<{$spec}>"  if $!ver.defined;
-        $spec ~= ":auth<{$spec}>" if $!auth.defined;
-        $spec ~= ":api<{$spec}>"  if $!api.defined;
+        $spec ~= ":ver<{$!ver}>"   if $!ver.defined;
+        $spec ~= ":auth<{$!auth}>" if $!auth.defined;
+        $spec ~= ":api<{$!api}>"   if $!api.defined;
 
         $spec
     }
@@ -52,9 +53,16 @@ class Dependency is export {
 }
 
 class DependencyError is export {
+    has Str $.file;
+    has Int $.line-number;
+    has Str $.statement;
+    has Str $.message;
 }
 
 class DistStatus is export {
+    has Str  $.spec;
+    has Bool $.installed;
+    has Bool $.in-fez;
 }
 
 sub zef-status( # was: dist-status(
@@ -101,76 +109,92 @@ sub zef-status( # was: dist-status(
 }
 
 sub parse-dependency-statement( # was parse-module-spec
-    Str $statement,
-    Str $file!,
-    Int $line-number!,
+    Str:D $statement where *.chars,
+    Str:D :$file!,
+    Int:D :$line-number!,
     :$debug,
-    --> Hash
 ) is export {
     #                    use|need|require
     my $m = $statement ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
 
-    return %() unless $m;
-
-    my %dep =
-        verb   => ~$m<Verb>,
-        module => ~$m<Name>,
-    ;
-
-    for $m<advs><Adv> -> $a {
-        my $name  = ~$a<name>;
-        my $value = ~$a<value>;
-
-        return %() if %dep{$name}:exists;
-
-        %dep{$name} = $value;
+    unless $m {
+        return DependencyError.new(
+            :$file,
+            :$line-number,
+            :statement($statement),
+	    :message("duplicate :$m<advs adverb"),
+	);
     }
 
-    my $key = %dep<module>;
+    return Dependency.new(
+	:$file,
+	:$line-number,
+	:statement($statement),
 
-    for <auth api ver> -> $k {
-        if %dep{$k}:exists {
-            $key ~= "|$k={%dep{$k}}";
-        }
-    }
+        :command(%dep<verb>),
+        :module(%dep<module>),
 
-    %dep<key> = $key;
-
-    return %dep;
+        :ver(%dep<ver>),
+        :auth(%dep<auth>),
+        :api(%dep<api>),
+    );
 }
 
-sub parse-line(
-    Str $line,
+sub extract-dependencies-from-line( # was parse-line(
+    #Str:D  $line,
+    Str:D  $statement,
+    Str:D :$file!,
+    Int:D :$line-number!,
     :$debug,
      --> Array
 ) is export {
-    my @deps;
+    my @deps = [];
 
-    for $line.split(';') -> $part is copy {
+    #return @deps unless $line.trim.chars;
+    return @deps unless $statement.trim.chars;
+
+    =begin comment
+    my @parts = $line.split(';');
+    if $debug {
+        say "DEBUG: splitting line '\$line' on semicolons";
+        say " '$_'" for @parts;
+        say "early exit"; exit(1);
+    }
+
+    for @parts -> $part is copy {
         $part .= trim;
         next unless $part.chars;
-        my %dep = parse-dependency-statement($part);
+        my $result = parse-dependency-statement(
+            $part,
+            :$file,
+            :$line-number,
+        );
 
-        if %dep.elems {
-            @deps.push: %dep;
+        if $result ~~ Dependency {
+             @deps.push($result);
+        }
+        else {
+            @deps.push($result);   # DependencyError object
         }
     }
+    =end comment
 
     return @deps;
 }
 
-sub write-new-meta(
-    IO::Path $meta-path,
+# IO::Path $meta-path,
+sub write-new-meta6(
+    $meta-path,
     @source-deps,
     --> Bool
 ) is export {
     # check and writes a new version only if needed
-    my $json = $meta-path.slurp;
+    my $json = $meta-path.IO.slurp;
     my $meta = from-json $json;
 
     my @depends;
-    my @test-depends;
     my @build-depends;
+    my @test-depends;
 
     # collect existing, remove duplicates
     my %seen-dep;
@@ -223,10 +247,11 @@ sub write-new-meta(
 
     # report what was removed
 
-=begin comment
-    my $out = $meta-path.parent.add('new-META6.json');
+#=begin comment
+    my $out = $meta-path.IO.parent.add('new-META6.json');
     $out.spurt(to-json($meta, :sorted-keys));
 
     True;
-=end comment
+#=end comment
+
 }

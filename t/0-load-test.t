@@ -1,8 +1,8 @@
 use Test;
 
-my @modules = <
-    App::DistroLint
->;
+my @modules = (
+    'App::DistroLint',
+);
 
 plan @modules.elems;
 
