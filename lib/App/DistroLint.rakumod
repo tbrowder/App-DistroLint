@@ -476,7 +476,7 @@ sub analyze-meta6(
     my $meta-provides = $meta<provides> // {};
 
     for %provides.keys -> $module {
-        unless $meta-provides{$module}:exists {
+        if not $meta-provides{$module}:exists {
             @issues.push("missing provides entry: $module");
         }
         elsif $meta-provides{$module} ne %provides{$module} {
