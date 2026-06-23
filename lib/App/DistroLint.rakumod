@@ -108,7 +108,7 @@ sub zef-status(
 
 }
 
-sub parse-dependency-statement( 
+sub parse-dependency-statement(
     Str $statement,
     Str :$file!,
     Int :$line-number!,
@@ -156,7 +156,7 @@ sub extract-dependencies-from-line(
     if $debug {
         say "DEBUG: splitting line '\$line' on semicolons";
         say " '$_'" for @parts;
-        say "early exit"; 
+        say "early exit";
         exit(1);
     }
 
@@ -251,31 +251,259 @@ sub write-new-meta6(
 }
 
 sub scan-distribution(
+    IO::Path $root,
+    :$debug = False,
+    --> Hash
 ) is export {
+    my @dependencies;
+    my @errors;
+
+    my @dirs = <lib t rakutest xt bin sbin>;
+
+    for @dirs -> $dir-name {
+        my $dir = $root.add($dir-name);
+        next unless $dir.d;
+
+        for $dir.dir(:recursive) -> $path {
+            next unless $path.f;
+
+            my $rel = $path.relative($root).Str;
+            my $line-number = 0;
+
+            for $path.lines -> $line {
+                ++$line-number;
+
+                my @items = extract-dependencies-from-line(
+                    $line,
+                    :file($rel),
+                    :$line-number,
+                    :$debug,
+                );
+
+                for @items -> $item {
+                    if $item ~~ Dependency {
+                        @dependencies.push($item);
+                    }
+                    elsif $item ~~ DependencyError {
+                        @errors.push($item);
+                    }
+                }
+            }
+        }
+    }
+
+    return %(
+        dependencies => @dependencies,
+        errors       => @errors,
+    );
 }
 
 sub classify-dependencies(
+    @dependencies,
+    --> Hash
 ) is export {
+    my SetHash %depends;
+    my SetHash %build-depends;
+    my SetHash %test-depends;
+
+    for @dependencies -> $dep {
+        next unless $dep ~~ Dependency;
+
+        my $spec = $dep.spec;
+        my $file = $dep.file;
+
+        if $file.starts-with('t/')
+            or $file.starts-with('xt/')
+            or $file.starts-with('rakutest/')
+        {
+            %test-depends{$spec} = True;
+        }
+        elsif $file eq 'Build.rakumod'
+            or $file eq 'Build.pm6'
+            or $file eq 'build.raku'
+            or $file.starts-with('build/')
+        {
+            %build-depends{$spec} = True;
+        }
+        elsif $file.starts-with('lib/')
+            or $file.starts-with('bin/')
+            or $file.starts-with('sbin/')
+        {
+            %depends{$spec} = True;
+        }
+    }
+
+    return %(
+        depends       => %depends,
+        build-depends => %build-depends,
+        test-depends  => %test-depends,
+    );
 }
 
 sub canonicalize-meta-dependency-sets(
+    :%depends!,
+    :%build-depends!,
+    :%test-depends!,
+    --> Hash
 ) is export {
+    my SetHash %new-depends;
+    my SetHash %new-build-depends;
+    my SetHash %new-test-depends;
+
+    for %depends.keys -> $spec {
+        %new-depends{$spec} = True;
+    }
+
+    for %build-depends.keys -> $spec {
+        next if %new-depends{$spec}:exists;
+        %new-build-depends{$spec} = True;
+    }
+
+    for %test-depends.keys -> $spec {
+        next if %new-depends{$spec}:exists;
+        next if %new-build-depends{$spec}:exists;
+        %new-test-depends{$spec} = True;
+    }
+
+    return %(
+        depends       => %new-depends,
+        build-depends => %new-build-depends,
+        test-depends  => %new-test-depends,
+    );
 }
 
 sub read-meta6(
+    IO::Path $meta-path,
+    --> Associative
 ) is export {
+    my $json = $meta-path.slurp;
+    my $meta = from-json($json);
+
+    die "META6.json top-level object is not associative"
+        unless $meta ~~ Associative;
+
+    return $meta;
 }
 
 sub build-provides-map(
+    IO::Path $root,
+    --> Hash
 ) is export {
+    my %provides;
+
+    my $lib = $root.add('lib');
+    return %provides unless $lib.d;
+
+    for $lib.dir(:recursive) -> $path {
+        next unless $path.f;
+
+        my $rel = $path.relative($root).Str;
+
+        for $path.lines -> $line {
+            my $m = $line.match(
+                /^
+                \s*
+                [unit \s+]?
+                [module|class|role|grammar|package]
+                \s+
+                (<[\w]>+ [ '::' <[\w]>+ ]*)
+                /
+            );
+
+            if $m {
+                my $module = ~$m[0];
+                %provides{$module} = $rel;
+                last;
+            }
+        }
+    }
+
+    return %provides;
 }
 
 sub analyze-meta6(
+    $meta,
+    :%depends!,
+    :%build-depends!,
+    :%test-depends!,
+    :%provides!,
+    --> Hash
 ) is export {
+    my @issues;
+
+    my %meta-dep;
+    for $meta<depends> // [] -> $spec {
+        if %meta-dep{$spec}:exists {
+            @issues.push("duplicate depends entry: $spec");
+        }
+        %meta-dep{$spec} = True;
+    }
+
+    my %meta-build;
+    for $meta<build-depends> // [] -> $spec {
+        if %meta-build{$spec}:exists {
+            @issues.push("duplicate build-depends entry: $spec");
+        }
+        %meta-build{$spec} = True;
+    }
+
+    my %meta-test;
+    for $meta<test-depends> // [] -> $spec {
+        if %meta-test{$spec}:exists {
+            @issues.push("duplicate test-depends entry: $spec");
+        }
+        %meta-test{$spec} = True;
+    }
+
+    for %depends.keys -> $spec {
+        unless %meta-dep{$spec}:exists {
+            @issues.push("missing depends entry: $spec");
+        }
+    }
+
+    for %build-depends.keys -> $spec {
+        unless %meta-build{$spec}:exists {
+            @issues.push("missing build-depends entry: $spec");
+        }
+    }
+
+    for %test-depends.keys -> $spec {
+        unless %meta-test{$spec}:exists {
+            @issues.push("missing test-depends entry: $spec");
+        }
+    }
+
+    my $meta-provides = $meta<provides> // {};
+
+    for %provides.keys -> $module {
+        unless $meta-provides{$module}:exists {
+            @issues.push("missing provides entry: $module");
+        }
+        elsif $meta-provides{$module} ne %provides{$module} {
+            @issues.push(
+                "wrong provides path for $module: "
+                ~ "{$meta-provides{$module}} should be {%provides{$module}}"
+            );
+        }
+    }
+
+    for $meta-provides.keys -> $module {
+        unless %provides{$module}:exists {
+            @issues.push("stale provides entry: $module");
+        }
+    }
+
+    return %(
+        issues => @issues,
+    );
 }
 
-sub real-runner(
-) is export {
+sub real-runner(*@cmd --> Hash) is export {
+    my $p = run |@cmd, :out, :err;
+
+    return %(
+        exitcode => $p.exitcode,
+        out      => $p.out.slurp,
+        err      => $p.err.slurp,
+    );
 }
-
-
