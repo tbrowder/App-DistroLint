@@ -1,3 +1,5 @@
+# beginning of modul App::DistroLint
+
 unit module App::DistroLint;
 
 =begin comment
@@ -122,11 +124,10 @@ sub parse-dependency-statement(
             :$file,
             :$line-number,
             :statement($statement),
-            :message("duplicate ':$m<advs>' adverb"),
+            :message("duplicate :$m<advs adverb"),
         );
     }
 
-    my %dep;
     return Dependency.new(
         :$file,
         :$line-number,
@@ -148,7 +149,7 @@ sub extract-dependencies-from-line(
     :$debug,
      --> Array
 ) is export {
-    my @deps; # = [];
+    my @deps = [];
 
     return @deps unless $line.trim.chars;
 
@@ -250,32 +251,38 @@ sub write-new-meta6(
     True;
 }
 
-sub scan-distribution(
-) is export {
+# end of App::DistroLint
+
+# begining of test file "t/0*t"
+use Test;
+
+my @modules = (
+    'App::DistroLint',
+);
+
+plan @modules.elems;
+
+for @modules -> $m {
+    use-ok $m, "Module '$m' used okay";
 }
 
-sub classify-dependencies(
-) is export {
-}
+# ending of test file "t/0*t"
 
-sub canonicalize-meta-dependency-sets(
-) is export {
-}
+# beginning output of STDOUT
+1..1
+not ok 1 - Module 'App::DistroLint' used okay
+# ending output of STDOUT
 
-sub read-meta6(
-) is export {
-}
+# beginning output of STDERR
 
-sub build-provides-map(
-) is export {
-}
+# Failed test 'Module 'App::DistroLint' used okay'
+# at t/0-load-test.t line 10
+# ===SORRY!=== Error while compiling /usr/local/git-repos/my-public-modules/App-DistroLint/lib/App/DistroLint.rakumod (App::DistroLint)
+# Variable '$line' is not declared. Did you mean any of these: '&lines',
+# '&link'?
+# at /usr/local/git-repos/my-public-modules/App-DistroLint/lib/App/DistroLint.rakumod (App::DistroLint):152
+# ------>     return @deps unless <HERE>$line.trim.chars;
+# 
+# You failed 1 test of 1
 
-sub analyze-meta6(
-) is export {
-}
-
-sub real-runner(
-) is export {
-}
-
-
+# ending output of STDERR
