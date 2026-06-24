@@ -39,7 +39,7 @@ class Dependency is export {
 
     has Str $.ver  is rw;
     has Str $.auth is rw;
-    has Str $.api  is rw;
+    has Int $.api  is rw;
 
     method spec(--> Str) {
         my $spec = $!module;
@@ -47,9 +47,8 @@ class Dependency is export {
         $spec ~= ":auth<{$!auth}>" if $!auth.defined;
         $spec ~= ":api<{$!api}>"   if $!api.defined;
 
-        $spec
+        $spec.Str
     }
-
 }
 
 class DependencyError is export {
@@ -122,12 +121,31 @@ sub parse-dependency-statement(
             :$file,
             :$line-number,
             :statement($statement),
-            :message("duplicate ':$m<advs>' adverb"),
+            #:message("duplicate '{:$m<advs>}' adverb"),
+            :message("invalid or duplicate adverb"),
         );
     }
 
-    my %dep;
-    return Dependency.new(
+    # fill the dep with data from $m
+    my %dep =
+        verb   => ~$m<Verb>,
+        module => ~$m<Name>,
+    ;
+
+    for $m<advs><Adv> -> $a {
+        my $name  = ~$a<name>;
+        my $value;
+        if $name eq 'api' {
+            $value = +$a<value>;
+        }
+        else {
+            $value = ~$a<value>;
+        }
+        return %() if %dep{$name}:exists;
+        %dep{$name} = $value;
+    }
+
+    my $dep = Dependency.new(
         :$file,
         :$line-number,
         :statement($statement),
@@ -135,10 +153,14 @@ sub parse-dependency-statement(
         :command(%dep<verb>),
         :module(%dep<module>),
 
-        :ver(%dep<ver>),
-        :auth(%dep<auth>),
-        :api(%dep<api>),
     );
+    # other parts if they exist
+    $dep.ver  = %dep<ver>  if %dep<ver>:exists;
+    $dep.auth = %dep<auth> if %dep<auth>:exists;
+    $dep.api  = %dep<api>  if %dep<api>:exists;
+
+    $dep
+
 }
 
 sub extract-dependencies-from-line(
@@ -346,14 +368,27 @@ sub canonicalize-meta-dependency-sets(
     :%test-depends!,
     --> Hash
 ) is export {
+    =begin comment
     my SetHash %new-depends;
     my SetHash %new-build-depends;
     my SetHash %new-test-depends;
+    =end comment
 
+    my %new-depends is SetHash;
+
+    my $i = 0;
     for %depends.keys -> $spec {
-        %new-depends{$spec} = True;
+        ++$i;
+        if $i == 1 {
+            # initiate new SetHash
+            %new-depends = ($spec);
+            next;
+        }
+        %new-depends (|)= ($spec);
+        #%new-depends{$spec} = True;
     }
 
+    =begin comment
     for %build-depends.keys -> $spec {
         next if %new-depends{$spec}:exists;
         %new-build-depends{$spec} = True;
@@ -364,11 +399,12 @@ sub canonicalize-meta-dependency-sets(
         next if %new-build-depends{$spec}:exists;
         %new-test-depends{$spec} = True;
     }
+    =end comment
 
     return %(
-        depends       => %new-depends,
-        build-depends => %new-build-depends,
-        test-depends  => %new-test-depends,
+    #   depends       => %new-depends,
+    #   build-depends => %new-build-depends,
+    #   test-depends  => %new-test-depends,
     );
 }
 

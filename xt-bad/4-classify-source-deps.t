@@ -1,32 +1,33 @@
 use Test;
+
 use App::DistroLint;
 
 my @deps =
     Dependency.new(
         :file<lib/Foo.rakumod>,
         :line-number(1),
-        :statement<use Runtime::Dep>,
+        :statement('use Runtime::Dep'),
         :command<use>,
         :module<Runtime::Dep>,
     ),
     Dependency.new(
         :file<bin/foo>,
         :line-number(2),
-        :statement<use App::Dep>,
+        :statement('use App::Dep'),
         :command<use>,
         :module<App::Dep>,
     ),
     Dependency.new(
         :file<t/basic.rakutest>,
         :line-number(3),
-        :statement<use Test::Dep>,
+        :statement('use Test::Dep'),
         :command<use>,
         :module<Test::Dep>,
     ),
     Dependency.new(
         :file<Build.rakumod>,
         :line-number(4),
-        :statement<use Build::Dep>,
+        :statement('use Build::Dep'),
         :command<use>,
         :module<Build::Dep>,
     );

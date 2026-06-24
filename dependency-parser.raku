@@ -17,12 +17,11 @@ sub parse-dependency(Str $text --> Hash) {
     for $m<advs><Adv> -> $a {
         my $name  = ~$a<name>;
         my $value = ~$a<value>;
-
         return %() if %dep{$name}:exists;
-
         %dep{$name} = $value;
     }
 
+    =begin comment
     my $key = %dep<module>;
 
     for <auth api ver> -> $k {
@@ -32,6 +31,7 @@ sub parse-dependency(Str $text --> Hash) {
     }
 
     %dep<key> = $key;
+    =end comment
 
     return %dep;
 }
