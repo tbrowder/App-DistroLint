@@ -107,12 +107,15 @@ sub zef-status(
 
 }
 
+subset DepOrErr where Dependency | DependencyError;
 sub parse-dependency-statement(
     Str $statement,
     Str :$file!,
     Int :$line-number!,
     :$debug,
     #--> (Dependency|DependencyError)
+    #--> Mu where Dependency | DependencyError
+    --> DepOrErr
 ) is export {
     #                    use|need|require
     my $m = $statement ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
