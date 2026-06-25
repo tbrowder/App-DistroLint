@@ -2,6 +2,7 @@ use Test;
 
 use App::DistroLint;
 
+# a list of Dependency objects
 my @deps =
     Dependency.new(
         :file<lib/Foo.rakumod>,
@@ -32,6 +33,8 @@ my @deps =
         :module<Build::Dep>,
     );
 
+
+# is %ses a Hash?
 my %sets = classify-dependencies(@deps);
 
 ok %sets<depends>{'Runtime::Dep'}:exists;

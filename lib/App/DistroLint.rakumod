@@ -113,8 +113,6 @@ sub parse-dependency-statement(
     Str :$file!,
     Int :$line-number!,
     :$debug,
-    #--> (Dependency|DependencyError)
-    #--> Mu where Dependency | DependencyError
     --> DepOrErr
 ) is export {
     #                    use|need|require
@@ -255,9 +253,9 @@ sub write-new-meta6(
     $meta<build-depends> = @build-depends;
     =end comment
 
-    my SetHash %new-depends;
-    my SetHash %new-build;
-    my SetHash %new-test;
+    my %new-depends is SetHash;
+    my %new-build   is SetHash;
+    my %new-test    is SetHash;
 
     # overlaps
     my @dep-test-overlap;
@@ -339,9 +337,9 @@ sub classify-dependencies(
     @dependencies,
     --> Hash
 ) is export {
-    my SetHash %depends;
-    my SetHash %build-depends;
-    my SetHash %test-depends;
+    my %depends       is SetHash;
+    my %build-depends is SetHash;
+    my %test-depends  is SetHash;
 
     for @dependencies -> $dep {
         next unless $dep ~~ Dependency;
@@ -351,21 +349,21 @@ sub classify-dependencies(
 
         if $file.starts-with('t/')
             or $file.starts-with('xt/')
-            or $file.starts-with('rakutest/')
-        {
+            or $file.starts-with('rakutest/') {
+
             %test-depends{$spec} = True;
         }
         elsif $file eq 'Build.rakumod'
             or $file eq 'Build.pm6'
             or $file eq 'build.raku'
-            or $file.starts-with('build/')
-        {
+            or $file.starts-with('build/') {
+
             %build-depends{$spec} = True;
         }
         elsif $file.starts-with('lib/')
             or $file.starts-with('bin/')
-            or $file.starts-with('sbin/')
-        {
+            or $file.starts-with('sbin/') {
+
             %depends{$spec} = True;
         }
     }
