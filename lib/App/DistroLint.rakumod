@@ -62,6 +62,10 @@ class DistStatus is export {
     has Str  $.spec;
     has Bool $.installed;
     has Bool $.in-fez;
+
+    method available(--> Bool) {
+        $!in-fez
+    }
 }
 
 sub zef-status(
@@ -109,6 +113,11 @@ sub zef-status(
         $in-fez = True;
     }
 
+    return DistStatus.new(
+        :$spec,
+        :$installed,
+        :in-fez($in-fez),
+    );
 }
 
 subset DepOrErr where Dependency | DependencyError;
