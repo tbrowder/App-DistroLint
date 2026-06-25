@@ -18,20 +18,20 @@ Multiple statements may appear on a line separated by semicolons.
 The parser returns a normalized key in canonical order:
     Module::Name|ver=0.1|auth=sue|api=3
 
+
 =end comment
 
 use Text::Utils :strip-comment;
 use JSON::Fast;
 
-my regex Verb   { use | need | require }
-my regex Name   { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
+our regex Verb is export  { use | need | require }
+our regex Name is export  { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
                    [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
-my regex Adv    { ':' $<name>=(ver|auth|api) '<' $<value>=[ <-[>]>+ ] '>' }
+our regex Adv  is export  { ':' $<name>=(ver|auth|api) '<' $<value>=[ <-[>]>+ ] '>' }
 
 class Dependency is export {
     has Str $.file;
     has Int $.line-number;
-
     has Str $.statement; # the original use string
 
     has Str $.command; # use, require, or need
@@ -112,6 +112,7 @@ sub parse-dependency-statement(
     Str :$file!,
     Int :$line-number!,
     :$debug,
+    #--> (Dependency|DependencyError)
 ) is export {
     #                    use|need|require
     my $m = $statement ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
@@ -141,7 +142,13 @@ sub parse-dependency-statement(
         else {
             $value = ~$a<value>;
         }
-        return %() if %dep{$name}:exists;
+
+        # return a DependencyError
+        if %dep{$name}:exists {
+            return DependencyError.new(
+            )
+        }
+
         %dep{$name} = $value;
     }
 

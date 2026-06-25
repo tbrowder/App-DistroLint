@@ -20,7 +20,6 @@ subtest 'valid single dependency statements' => {
     isa-ok $dep.spec, Str;
 };
 
-=begin comment
 subtest 'valid statement without adverbs' => {
     my $dep = parse-dependency-statement(
         'need Baz::Qux',
@@ -28,16 +27,14 @@ subtest 'valid statement without adverbs' => {
         :line-number(5),
     );
 
-    is 1, 1;
-    =begin comment
     isa-ok $dep, Dependency;
+    is $dep.line-number, 5;
     is $dep.command, 'need';
     is $dep.module, 'Baz::Qux';
+
     nok $dep.ver.defined;
     nok $dep.auth.defined;
     nok $dep.api.defined;
-    =end comment
 };
-=end comment
 
 done-testing;
