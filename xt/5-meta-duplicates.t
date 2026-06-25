@@ -1,4 +1,5 @@
 use Test;
+
 use App::DistroLint;
 
 my %depends is SetHash = (<JSON::Fast> => True);
@@ -17,7 +18,6 @@ my %clean = canonicalize-meta-dependency-sets(
     :%build-depends,
 );
 
-=begin comment
 ok %clean<depends><JSON::Fast>:exists;
 nok %clean<test-depends><JSON::Fast>:exists;
 
@@ -26,6 +26,5 @@ nok %clean<test-depends><Test::Only>:exists;
 
 ok %clean<depends><Runtime::Only>:exists;
 ok %clean<build-depends><App::Mi6>:exists;
-=end comment
 
 done-testing;

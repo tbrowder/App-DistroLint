@@ -17,7 +17,6 @@ subtest 'duplicate adverbs are errors' => {
     #like $dep.message, /ver/;
 };
 
-=begin comment
 subtest 'unknown adverb is an error' => {
     my $err = parse-dependency-statement(
         'use Foo::Bar:xyz<abc>',
@@ -28,6 +27,5 @@ subtest 'unknown adverb is an error' => {
     isa-ok $err, DependencyError;
     like $err.message, /unknown|invalid/;
 };
-=end comment
 
 done-testing;
