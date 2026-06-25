@@ -13,8 +13,8 @@ subtest 'duplicate adverbs are errors' => {
     isa-ok $dep, DependencyError;
     is $dep.file, 'lib/Foo.rakumod';
     is $dep.line-number, 20;
-    #like $dep.message, /duplicate/;
-    #like $dep.message, /ver/;
+    like $dep.message, /duplicate/;
+    like $dep.message, /ver/;
 };
 
 subtest 'unknown adverb is an error' => {

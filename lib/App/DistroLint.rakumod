@@ -149,6 +149,11 @@ sub parse-dependency-statement(
         # return a DependencyError
         if %dep{$name}:exists {
             return DependencyError.new(
+                :$file,
+                :$line-number,
+                :statement($statement),
+                #:message("duplicate '{:$m<advs>}' adverb"),
+                :message("invalid or duplicate adverb"),
             )
         }
 
