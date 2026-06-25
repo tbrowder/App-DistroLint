@@ -381,12 +381,6 @@ sub canonicalize-meta-dependency-sets(
     :%test-depends!,
     --> Hash
 ) is export {
-    =begin comment
-    my SetHash %new-depends;
-    my SetHash %new-build-depends;
-    my SetHash %new-test-depends;
-    =end comment
-
     my %new-depends is SetHash;
 
     my $i = 0;
