@@ -66,6 +66,7 @@ class DistStatus is export {
 
 sub zef-status(
     Str $spec,
+    Callable :$runner = &real-runner,
     :$debug,
     --> DistStatus
 ) is export {
@@ -73,9 +74,14 @@ sub zef-status(
     my $in-fez    = False;
 
     # Check installed distributions
-    my $p1 = run 'zef', '--installed', 'list', :out, :err;
-    if $p1.exitcode == 0 {
-        for $p1.out.slurp.lines -> $line {
+    my %p1 = $runner(
+        'zef',
+        '--installed',
+        'list',
+    );
+
+    if %p1<exitcode> == 0 {
+        for %p1<out>.lines -> $line {
             if $line.starts-with($spec) {
                  $installed = True;
                  last;
@@ -93,17 +99,15 @@ sub zef-status(
     }
 
     # Not installed, check whether fez can find it in the ecosystem
-    my $p2 = run 'zef', 'info', $spec, :out, :err;
+    my %p2 = $runner(
+        'zef',
+        'info',
+        $spec,
+    );
 
-    if $p2.exitcode == 0 {
+    if %p2<exitcode> == 0 {
         $in-fez = True;
     }
-
-    return DistStatus.new(
-        :$spec,
-        :$installed,
-        :in-fez,
-    );
 
 }
 
@@ -381,37 +385,31 @@ sub canonicalize-meta-dependency-sets(
     :%test-depends!,
     --> Hash
 ) is export {
-    my %new-depends is SetHash;
+    my %new-depends       is SetHash;
+    my %new-build-depends is SetHash;
+    my %new-test-depends  is SetHash;
 
-    my $i = 0;
     for %depends.keys -> $spec {
-        ++$i;
-        if $i == 1 {
-            # initiate new SetHash
-            %new-depends = ($spec);
-            next;
-        }
-        %new-depends (|)= ($spec);
-        #%new-depends{$spec} = True;
+        %new-depends{$spec} = True;
     }
 
-    =begin comment
     for %build-depends.keys -> $spec {
         next if %new-depends{$spec}:exists;
+
         %new-build-depends{$spec} = True;
     }
 
     for %test-depends.keys -> $spec {
         next if %new-depends{$spec}:exists;
         next if %new-build-depends{$spec}:exists;
+
         %new-test-depends{$spec} = True;
     }
-    =end comment
 
     return %(
-    #   depends       => %new-depends,
-    #   build-depends => %new-build-depends,
-    #   test-depends  => %new-test-depends,
+        depends       => %new-depends,
+        build-depends => %new-build-depends,
+        test-depends  => %new-test-depends,
     );
 }
 
@@ -544,7 +542,7 @@ sub analyze-meta6(
 sub real-runner(*@cmd --> Hash) is export {
     my $p = run |@cmd, :out, :err;
 
-    return %(
+   %(
         exitcode => $p.exitcode,
         out      => $p.out.slurp,
         err      => $p.err.slurp,
