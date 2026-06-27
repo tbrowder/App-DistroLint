@@ -74,7 +74,6 @@ sub MAIN(
 
     say '';
 
-
     if $new-meta-path.defined {
         say "Wrote proposed META6 correction:";
         say "  $new-meta-path";
@@ -88,4 +87,6 @@ sub MAIN(
     unless $new-meta-path.defined or $notes-path.defined {
         say "No issues found.";
     }
+
+    exit(0);
 }
