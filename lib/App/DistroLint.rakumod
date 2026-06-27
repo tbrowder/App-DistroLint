@@ -228,76 +228,6 @@ sub extract-dependencies-from-line(
     return @deps;
 }
 
-sub write-new-meta6(
-    $meta-path,
-    @source-deps,
-    --> Bool
-) is export {
-    # checks and writes a new version only if needed
-    my $json = $meta-path.slurp;
-    my $meta = from-json $json;
-
-    my @depends;
-    my @build-depends;
-    my @test-depends;
-
-    # collect existing, remove duplicates
-    my %seen-dep;
-    for $meta<depends> // [] -> $spec {
-        next if %seen-dep{$spec}++;
-        @depends.push: $spec;
-    }
-
-    my %seen-test;
-    for $meta<test-depends> // [] -> $spec {
-        next if %seen-test{$spec}++;
-        @test-depends.push: $spec;
-    }
-
-    my %seen-build;
-    for $meta<build-depends> // [] -> $spec {
-        next if %seen-build{$spec}++;
-        @build-depends.push: $spec;
-    }
-
-    =begin comment
-    $meta<depends>       = @depends;
-    $meta<test-depends>  = @test-depends;
-    $meta<build-depends> = @build-depends;
-    =end comment
-
-    my %new-depends is SetHash;
-    my %new-build   is SetHash;
-    my %new-test    is SetHash;
-
-    # overlaps
-    my @dep-test-overlap;
-    my @dep-build-overlap;
-    my @build-test-overlap;
-
-    for @depends -> $spec {
-        %new-depends{$spec} = True;
-    }
-
-    for @build-depends -> $spec {
-        next if %new-depends{$spec}:exists;
-        %new-build{$spec} = True;
-    }
-
-    for @test-depends -> $spec {
-        next if %new-depends{$spec}:exists;
-        next if %new-build{$spec}:exists;
-        %new-test{$spec} = True;
-    }
-
-    # report what was removed
-
-    my $out = $meta-path.parent.add('new-META6.json');
-    $out.spurt(to-json($meta, :sorted-keys));
-
-    True;
-}
-
 sub scan-distribution(
     IO::Path $root,
     :$debug = False,
@@ -581,6 +511,7 @@ sub primary-top-module(
 
     return '';
 }
+
 sub write-issues-file(
     IO::Path $root,
     @errors,
@@ -621,6 +552,7 @@ sub write-issues-file(
 
     return $out;
 }
+
 sub write-corrected-meta6(
     IO::Path $meta-path,
     $meta,

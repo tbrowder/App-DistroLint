@@ -54,7 +54,8 @@ sub MAIN(
     my $notes-path;
 
     if %analysis<issues>.elems {
-        $new-meta-path = write-new-meta6(
+        #$new-meta-path = write-new-meta6(
+        $new-meta-path = write-corrected-meta6(
             $meta-path,
             $meta,
             :depends(%clean<depends>),
