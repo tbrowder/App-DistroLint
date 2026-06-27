@@ -1,251 +1,130 @@
 #!/usr/bin/env raku
 
-use JSON::Fast;
-
-use File::Find;
-use Text::Utils :strip-comment;
-
 use App::DistroLint;
 
-if not @*ARGS {
-    print qq:to/HERE/;
-    Usage: {$*PROGRAM.basename} </path/to/distro/directory>
+sub MAIN(
+    Str:D $repo-path,
+    Bool :$debug = False,
+) {
+    my $root = $repo-path.IO;
 
-    Searches the repository directory for issues affecting 
-    normal operation of the distribution's repository.
-
-    Current actions:
-
-    + Reports any external distributions being 'used' but
-      not listed in the 'META6.json' file.
-
-    * Reports any duplicates in the 'META6.json' file or
-      any of the 'using' files.
-
-    * Reports any adverbs being improperly used in 'using' files
-      and ensures the adverbs found are properly
-      listed in the corrected 'META6.json' file.
-
-      The new file is named 'new-META6.json'
-      for your viewing before substituting it for the existing file. 
-
-      Other notes and comments are listed in file 'LintNotes.txt'
-      (which is only created if necessary).
-
-    HERE
-    exit;
-}
-
-my $debug = 0;
-
-my $repo-path = @*ARGS.shift // "";
-unless $repo-path.IO.d {
-   die "confused with \$repo-path: '$repo-path'";
-}
-
-LINE: for @*ARGS {
-
-    when $_.IO.d {
-        print qq:to/HERE/;
-        FATAL: Multiple input paths detected.
-                 '$repo-path'
-                 '$_'
-               Exiting...
-        HERE
-        exit(1);
-    }
-    when /^ :i d / {
-        ++$debug;
-    }
-    default {
-        print qq:to/HERE/;
-        FATAL: Unknown arg '$_'.
-               Exiting...
-        HERE
-        exit(1);
-    }
-}
-
-# get the current META6.json contents
-my $meta = from-json "$repo-path/META6.json".IO.slurp;
-# the used modules need to be in one of three arrays:
-my @h-deps       = @($meta<depends>);       #.map({ $_ => True });
-my @h-build-deps = @($meta<build-depends>); #.map({ $_ => True });
-my @h-test-deps  = @($meta<test-depends>);  #.map({ $_ => True });
-
-# check for dups in the arrays
-# make a test for these
-
-# within individual arrays
-my $c1 = set Bag(@h-deps).grep(*.value > 1).map(*.key); 
-my $c2 = set Bag(@h-build-deps).grep(*.value > 1).map(*.key); 
-my $c3 = set Bag(@h-test-deps).grep(*.value > 1).map(*.key); 
-
-# between pairs of arrays
-my $p1 = Set(@h-deps)       (&) Set(@h-build-deps); 
-my $p2 = Set(@h-deps)       (&) Set(@h-test-deps); 
-my $p3 = Set(@h-build-deps) (&) Set(@h-test-deps); 
-
-my $dups  = $c1.elems + $c2.elems + $c3.elems;
-   $dups += $p1.elems + $p2.elems + $p3.elems;
-
-if $dups {
-    print q:to/HERE/;
-    WARNING: Found $dups duplicate depends entries in the 
-             META6.json file.
-             Please correct that before continuing.
-    HERE
-    say "Duplicates are:";
-    if $c1.elems {
-        say "  depends: ", $c1.keys.sort.join(" ");
-    }
-    if $c2.elems {
-        say "  build-depends: ", $c2.keys.sort.join(" ");
-    }
-    if $c3.elems {
-        say "  test-depends: ", $c3.keys.sort.join(" ");
+    unless $root.d {
+        die "FATAL: '$repo-path' is not a directory";
     }
 
-    if $p1.elems {
-        say "  between depends and build-depends: ", $p1.keys.sort.join(" ");
-    }
-    if $p2.elems {
-        say "  between depends and build-depends: ", $p2.keys.sort.join(" ");
-    }
-    if $p3.elems {
-        say "  between build-depends and test-depends: ", $p3.keys.sort.join(" ");
+    my $meta-path = $root.add('META6.json');
+
+    unless $meta-path.f {
+        die "FATAL: no META6.json found in '$repo-path'";
     }
 
-    exit(1);
-}
+    my $meta = read-meta6($meta-path);
 
-# combine the depends arrays
-my @known-dep-mods = @(|@h-deps, |@h-test-deps, |@h-build-deps);
+    my %scan = scan-distribution(
+        $root,
+        :$debug,
+    );
 
-# get the provided modules
-my %provided-modules = %($meta<provided>);
+    my @dependencies = @(%scan<dependencies>);
+    my @errors       = @(%scan<errors>);
 
-# now search all files
-# search the bin, sbin, t, xt, and lib files for used modules
-my @dirs = <bin sbin lib t xt>;
-# 
-my @allfils = [];
-for @dirs -> $dir {
-    next unless "$repo-path/$dir".IO.d;
-    my @fils = find :dir("$repo-path/$dir"), :type('file'), :exclude(/'.'git|'.'precomp/);
-    # note there may be dups to clean up
-    @allfils.append: @fils;
-}
+    my %classified = classify-dependencies(@dependencies);
 
-if 0 or $debug {
-    say "DEBUG: found the following files of interest:";
-    say "  $_" for @allfils;
-    if 1 {
-        say "DEBUG: Early exit...";
-        exit;
+    my %clean = canonicalize-meta-dependency-sets(
+        :depends(%classified<depends>),
+        :build-depends(%classified<build-depends>),
+        :test-depends(%classified<test-depends>),
+    );
+
+    my %analysis = analyze-meta6(
+        $meta,
+        :depends(%clean<depends>),
+        :build-depends(%clean<build-depends>),
+        :test-depends(%clean<test-depends>),
+        :%provides,
+    );
+
+    my %provides = build-provides-map($root);
+    my $self-top = primary-top-module(%provides)
+
+    my %classified = classify-dependencies(
+        @dependencies,
+        :$self-top,
+    );
+
+
+    my $new-meta-path;
+    my $notes-path;
+
+    if %analysis<issues>.elems {
+        $new-meta-path = write-new-meta6(
+            $meta-path,
+            $meta,
+            :depends(%clean<depends>),
+            :build-depends(%clean<build-depends>),
+            :test-depends(%clean<test-depends>),
+            :%provides,
+        );
+    }
+
+    if @errors.elems or %analysis<issues>.elems {
+        $notes-path = write-issues-file(
+            $root,
+            @errors,
+            @(%analysis<issues>),
+        );
+    }
+
+    say '';
+
+
+    if $new-meta-path.defined {
+        say "Wrote proposed META6 correction:";
+        say "  $new-meta-path";
+    }
+
+    if $notes-path.defined {
+        say "Wrote lint notes:";
+        say "  $notes-path";
+    }
+
+    unless $new-meta-path.defined or $notes-path.defined {
+        say "No issues found.";
     }
 }
 
-=begin comment
-my @fils  = find :dir("$repo-path/lib"), :name(/\.rakumod/);
-my @fils2 = find :dir("$repo-path/bin"), :type('file'), :exclude(/\.git/);
-my @fils3 = find :dir("$repo-path/sbin"), :type('file'), :exclude(/\.git/);
-my @all   = @fils.append(@fils2).append(@fils3);
-=end comment
+=finish
 
-if $debug {
-    say "DEBUG: Found files:";
-    say "  $_" for @allfils;
-}
 
-# search for used modules in @allfiles
-my %used-modules;
-my %dups;
+$new-meta-path = write-new-meta6(
+            $meta-path,
+            $meta,
+            :depends(%clean<depends>),
+            :build-depends(%clean<build-depends>),
+            :test-depends(%clean<test-depends>),
+            :%provides,
+        );
+    }
 
-FILE: for @allfils -> $fil {
-    say "Working file '$fil'" if $debug;
 
-    # a dup would look like:
-    # same file, same %result<module>
-    my $line-number = 0;
-    LINE: for $fil.IO.lines -> $line is copy {
-        ++$line-number;
-        
-        $line = strip-comment $line;
-        next LINE unless $line ~~ /\S/;
 
-        # assume multiple modules may be used on a single line
-        # replace  semicolons with spaces and split on words	
-        # note the line MUST start with use|need|require
-        next LINE unless $line ~~ /^ \s* [use|need|require] \h /;
 
-        # ignore use Test since it's always available as part of Raku
-        if $line ~~ /^ \s* use \h+ Test \h* ';' / { 
-            next LINE;
+
+
+
+say "\nMETA6.json issues:";
+        for %analysis<issues> -> $issue {
+            say "  $issue";
         }
 
-        if $debug {
-            say "DEBUG: use line: '$line'";
-        }
+        write-corrected-meta6(
+            $meta-path,
+            @dependencies,
+        );
 
-        for $line.split(';') -> $stmt {
-            my %results = parse-dependency $stmt;
-            if %results.elems {
-                # check for dups in the deps arrays
-                for %deps.kv -> $k, $v {
-                }
-            }
-            else {
-                say "Invalid dependency statemenr: $stmt on line $line-num";
-            }
-        }
-
-
-        =begin comment
-        if 0 or $debug {
-            say "DEBUG: 'use' lines:";
-            say "  $_" for %deps.kv;
-        }
-        =end comment
-
-        =begin comment
-        for @mods -> $modstr is copy {
-            $modstr .= trim;
-            my %result = parse-module-spec $modstr, :$debug;
-        }
-        =end comment
-
-        # check for dups: modules with the same module name in the same file
-        
-        =begin comment
-        # it is a 'use' line
-        %result<command> = ~$m[0]; # use|need|require
-        %result<module>  = ~$m[1]; # module name without adverbs
-        %result<auth>    = Nil;
-        %result<ver>     = Nil;
-        %result<api>     = Nil;
-        =end comment
+        say "\nWrote proposed correction: new-META6.json";
+    }
+    else {
+        say "No META6.json issues found.";
     }
 }
-
-#=finish
-
-# look at the quality issues of the modules found
-
-# compare the two sets of hashes
-my $new-meta = $meta;
-for %used-modules.keys -> $m {
-    unless %mods{$m}:exists {
-        say "adding module $m to the revised META6.json file";
-        @($new-meta<depends>).push: $m; 
-    }
-}
-
-# try to sort the depends array
-@($new-meta<depends>) .= sort;
-
-say "Revised META6.json for distro '$repo-path':";
-#say to-json $new-meta, :pretty, :sorted-keys;
-my $jfil = 'new-META6.json';
-spurt $jfil, to-json($new-meta, :pretty, :sorted-keys);
-say "See file '$jfil' for distro '$repo-path'.";

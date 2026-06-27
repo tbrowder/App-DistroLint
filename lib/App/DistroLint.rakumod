@@ -306,7 +306,7 @@ sub scan-distribution(
     my @dependencies;
     my @errors;
 
-    my @dirs = <lib t rakutest xt bin sbin>;
+    my @dirs = <lib t rakutest xt bin>;
 
     for @dirs -> $dir-name {
         my $dir = $root.add($dir-name);
@@ -348,6 +348,7 @@ sub scan-distribution(
 
 sub classify-dependencies(
     @dependencies,
+    Str :$self-top!,
     --> Hash
 ) is export {
     my %depends       is SetHash;
@@ -358,6 +359,10 @@ sub classify-dependencies(
         next unless $dep ~~ Dependency;
 
         my $spec = $dep.spec;
+        my $module-top = top-module($dep.module);
+
+        next if $module-top eq $self-top;
+
         my $file = $dep.file;
 
         if $file.starts-with('t/')
@@ -369,13 +374,12 @@ sub classify-dependencies(
         elsif $file eq 'Build.rakumod'
             or $file eq 'Build.pm6'
             or $file eq 'build.raku'
-            or $file.starts-with('build/') {
+            or $file.starts-with('build/')  {
 
             %build-depends{$spec} = True;
         }
         elsif $file.starts-with('lib/')
-            or $file.starts-with('bin/')
-            or $file.starts-with('sbin/') {
+            or $file.starts-with('bin/') {
 
             %depends{$spec} = True;
         }
@@ -556,4 +560,106 @@ sub real-runner(*@cmd --> Hash) is export {
         out      => $p.out.slurp,
         err      => $p.err.slurp,
     );
+}
+
+sub top-module(
+    Str:D $name,
+    :$debug,
+    --> Str
+) is  export {
+    return $name.split('::')[0];
+}
+
+sub primary-top-module(
+    %provides,
+    :$debug,
+    --> Str
+) is export {
+    for %provides.keys.sort -> $module {
+        return top-module($module);
+    }
+
+    return '';
+}
+sub write-issues-file(
+    IO::Path $root,
+    @errors,
+    @issues,
+    --> IO::Path
+) is export {
+    my $out = $root.add('LintNotes.txt');
+
+    my @lines;
+
+    @lines.push('App::DistroLint Notes');
+    @lines.push('=====================');
+    @lines.push('');
+
+    if @errors.elems {
+        @lines.push('Dependency Parse Errors');
+        @lines.push('-----------------------');
+
+        for @errors -> $err {
+            @lines.push("{$err.file}:{$err.line-number}: {$err.message}");
+            @lines.push("    {$err.statement}");
+            @lines.push('');
+        }
+    }
+
+    if @issues.elems {
+        @lines.push('META6.json Issues');
+        @lines.push('-----------------');
+
+        for @issues -> $issue {
+            @lines.push("  $issue");
+        }
+
+        @lines.push('');
+    }
+
+    $out.spurt(@lines.join("\n") ~ "\n");
+
+    return $out;
+}
+sub write-corrected-meta6(
+    IO::Path $meta-path,
+    $meta,
+    :%depends!,
+    :%build-depends!,
+    :%test-depends!,
+    :%provides!,
+    --> IO::Path
+) is export {
+
+    my $new-meta = $meta.clone;
+
+    $new-meta<depends> =
+        %depends.keys.sort.Array;
+
+    $new-meta<build-depends> =
+        %build-depends.keys.sort.Array;
+
+    $new-meta<test-depends> =
+        %test-depends.keys.sort.Array;
+
+    my %new-provides;
+
+    for %provides.keys.sort -> $module {
+        %new-provides{$module} = %provides{$module};
+    }
+
+    $new-meta<provides> = %new-provides;
+
+    my $outfile =
+        $meta-path.parent.add('new-META6.json');
+
+    $outfile.spurt(
+        to-json(
+            $new-meta,
+            :pretty,
+            :sorted-keys,
+        )
+    );
+
+    return $outfile;
 }
