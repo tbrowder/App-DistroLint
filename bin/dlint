@@ -33,7 +33,7 @@ sub MAIN(
 
     my %classified = classify-dependencies(
         @dependencies,
-        $self-top,
+        :$self-top,
     );
 
     my %clean = canonicalize-meta-dependency-sets(
