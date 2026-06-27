@@ -28,7 +28,13 @@ sub MAIN(
     my @dependencies = @(%scan<dependencies>);
     my @errors       = @(%scan<errors>);
 
-    my %classified = classify-dependencies(@dependencies);
+    my %provides = build-provides-map($root);
+    my $self-top = primary-top-module(%provides);
+
+    my %classified = classify-dependencies(
+        @dependencies,
+        $self-top,
+    );
 
     my %clean = canonicalize-meta-dependency-sets(
         :depends(%classified<depends>),
@@ -43,15 +49,6 @@ sub MAIN(
         :test-depends(%clean<test-depends>),
         :%provides,
     );
-
-    my %provides = build-provides-map($root);
-    my $self-top = primary-top-module(%provides)
-
-    my %classified = classify-dependencies(
-        @dependencies,
-        :$self-top,
-    );
-
 
     my $new-meta-path;
     my $notes-path;
@@ -90,41 +87,5 @@ sub MAIN(
 
     unless $new-meta-path.defined or $notes-path.defined {
         say "No issues found.";
-    }
-}
-
-=finish
-
-
-$new-meta-path = write-new-meta6(
-            $meta-path,
-            $meta,
-            :depends(%clean<depends>),
-            :build-depends(%clean<build-depends>),
-            :test-depends(%clean<test-depends>),
-            :%provides,
-        );
-    }
-
-
-
-
-
-
-
-say "\nMETA6.json issues:";
-        for %analysis<issues> -> $issue {
-            say "  $issue";
-        }
-
-        write-corrected-meta6(
-            $meta-path,
-            @dependencies,
-        );
-
-        say "\nWrote proposed correction: new-META6.json";
-    }
-    else {
-        say "No META6.json issues found.";
     }
 }
