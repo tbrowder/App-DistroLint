@@ -35,7 +35,7 @@ my @deps =
 
 
 # is %ses a Hash?
-my %sets = classify-dependencies(@deps);
+my %sets = classify-dependencies(@deps, :self-top("Foo"));
 
 ok %sets<depends>{'Runtime::Dep'}:exists;
 ok %sets<depends>{'App::Dep'}:exists;
