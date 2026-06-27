@@ -19,9 +19,9 @@ during preparation or maintenance by a distribution author. Run the binary
 without any arguments to see its current capabilities. The current 
 capabilities are:
 
-=item Reports the distribution's list of other distribution's
+=item Reports the distribution's list of other distributions
       being 'used' in the 'META6.json' file's list versus those actually 
-      being 'used' in the 'bin', 'sbin', 'rakumod', and test files.
+      being 'used' in the 'bin', 'rakumod', and test files.
 
 =item Detects duplicate entries of used modules.
 

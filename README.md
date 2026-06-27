@@ -17,7 +17,7 @@ DESCRIPTION
 
 Running binary `distrolint` on a distribution repository can be very helpful during preparation or maintenance by a distribution author. Run the binary without any arguments to see its current capabilities. The current capabilities are:
 
-  * Reports the distribution's list of other distribution's being 'used' in the 'META6.json' file's list versus those actually being 'used' in the 'bin', 'sbin', 'rakumod', and test files.
+  * Reports the distribution's list of other distributions being 'used' in the 'META6.json' file's list versus those actually being 'used' in the 'bin', 'rakumod', and test files.
 
   * Detects duplicate entries of used modules.
 
