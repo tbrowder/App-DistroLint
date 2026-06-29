@@ -18,7 +18,6 @@ Multiple statements may appear on a line separated by semicolons.
 The parser returns a normalized key in canonical order:
     Module::Name|ver=0.1|auth=sue|api=3
 
-
 =end comment
 
 use Text::Utils :strip-comment;
@@ -26,8 +25,20 @@ use JSON::Fast;
 
 our regex Verb is export  { use | need | require }
 our regex Name is export  { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
-                   [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
+                     [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
 our regex Adv  is export  { ':' $<name>=(ver|auth|api) '<' $<value>=[ <-[>]>+ ] '>' }
+our regex ImportTail is export {
+    [
+        \s+
+        [
+            ':' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
+            | ':' <[A..Z]>+
+            | ':' <[\w \-]>+
+            | ',' 
+            | '(' <-[)]>* ')'
+        ]+
+    ]?
+}
 
 class Dependency is export {
     has Str $.file;
@@ -50,14 +61,18 @@ class Dependency is export {
         $spec.Str
     }
 }
-
 class DependencyError is export {
     has Str $.file;
     has Int $.line-number;
     has Str $.statement;
     has Str $.message;
 }
-
+class NilDependency is export {
+    has Str $.file;
+    has Int $.line-number;
+#   has Str $.statement;
+    has Str $.message;
+}
 class DistStatus is export {
     has Str  $.spec;
     has Bool $.installed;
@@ -120,16 +135,53 @@ sub zef-status(
     );
 }
 
-subset DepOrErr where Dependency | DependencyError;
+subset DepOrErrOrNil of Any where { 
+    $_ ~~ any(Dependency, DependencyError, NilDependency) 
+}
+my DepOrErrOrNil $deptyp;
 sub parse-dependency-statement(
     Str $statement,
     Str :$file!,
     Int :$line-number!,
     :$debug,
-    --> DepOrErr
+    --> DepOrErrOrNil
 ) is export {
+	
+    unless looks-like-dependency-statement($statement) {
+        $deptyp = NilDependency.new(
+            :$file,
+            :$line-number,
+            :statement($statement),
+            :message("not a dependency statement"),
+        );
+        return $deptyp;
+    }
+
+    =begin comment
+    # original
     #                    use|need|require
     my $m = $statement ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
+    =end comment
+
+    # latest as of 28 Jun 2026
+    my $m = $statement ~~ /^ 
+        \s* 
+        $<command>=(use|need|require)
+        \s* 
+        $<module>=(
+                   <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
+            [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* 
+        )
+        \s*
+        $<adverbs>=(
+            [
+                ':' $<name>=(ver|auth|api)
+                ':' $<value>=(<-[>]>+)
+            ]*
+        )
+        <ImportTail>
+     \s* $
+   /;
 
     unless $m {
         return DependencyError.new(
@@ -147,7 +199,7 @@ sub parse-dependency-statement(
         module => ~$m<Name>,
     ;
 
-    for $m<advs><Adv> -> $a {
+    for $m<adverb> -> $a {
         my $name  = ~$a<name>;
         my $value;
         if $name eq 'api' {
@@ -248,8 +300,11 @@ sub scan-distribution(
             my $rel = $path.relative($root).Str;
             my $line-number = 0;
 
-            for $path.lines -> $line {
+            for $path.lines -> $raw-line is copy {
                 ++$line-number;
+
+                my $line = strip-comment $raw-line;
+                next unless $line ~~ /\S/;
 
                 my @items = extract-dependencies-from-line(
                     $line,
@@ -595,3 +650,11 @@ sub write-corrected-meta6(
 
     return $outfile;
 }
+
+sub looks-like-dependency-statement(
+    $statement
+    --> Bool
+) is export {
+    return so $statement ~~ /^ \s* (use|need|require) \s+ /;
+}
+
