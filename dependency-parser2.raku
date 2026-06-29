@@ -1,5 +1,16 @@
 #!/usr/bin/env raku
 
+unless @*ARGS {
+    print qq:to/HERE/;
+    Usage: {$*PROGRAM-NAME} go
+
+    Runs a copy of the dependency proccessor
+    code to be used in the main module.
+
+    HERE
+    exit;
+}
+
 # next version
 
 use Text::Utils :strip-comment;

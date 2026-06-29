@@ -11,7 +11,7 @@ $s = strip-comment $s;
 my @parts = $s.split(';').map(*.trim).grep(*.chars);
 
 # note prev op will NOT clean multiple white spaces
-# do that this way
+# do that this way (or use a regex)
 for @parts.kv -> $i, $part is copy {
     $part = $part.words.join(" ");
     say "part $i: '$part'";
