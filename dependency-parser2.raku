@@ -1,10 +1,12 @@
 #!/usr/bin/env raku
 
+use Test;
+
 unless @*ARGS {
     print qq:to/HERE/;
     Usage: {$*PROGRAM-NAME} go
 
-    Runs a copy of the dependency proccessor
+    Runs a copy of the dependency processor
     code to be used in the main module.
 
     HERE
@@ -79,6 +81,48 @@ class DistStatus is export {
     }
 }
 
+say "Working on parsing module statements...";
+
+my @lines = 
+'  use  X::Y :tree ; ',
+'  require  X::Y:ver<1.1> ; ',
+'  need  X::Y ; use Y::Z:<ver<2.0.1> ;',
+;
+
+# a simple line splitter
+sub split-line(Str $line --> Array) {
+    my @deps;
+    for $line.split(';') -> $part {
+        my %dep = parse-dependency-statement(
+                      $part,
+                      :file<dummy>,
+                      :line-number(0),
+                 );
+        if %dep.elems {
+            @deps.push: %dep;
+        }
+    }
+    return @deps;
+}
+
+my @deps;
+for @lines -> $line {
+    # may have multiple statements
+    my @statements = split-line $line;
+    for @statements -> $statement {
+        say "parsing statement: |$statement|";
+        my $dep = parse-dependency-statement(
+                      $statement,
+                      :file<some-file>,
+                      :line-number<1>,
+                  );
+        #is $dep, DepOrErrOrNil;
+        if $dep ~~ Dependency {
+            @deps.push: $dep; 
+        }
+    }
+}
+
 subset DepOrErrOrNil of Any where { 
     $_ ~~ any(Dependency, DependencyError, NilDependency) 
 }
@@ -91,7 +135,12 @@ sub parse-dependency-statement(
 ) is export {
     my $m = $statement ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
 
-    return %() unless $m;
+    unless $m {
+        return NilDependency.new(
+        );
+    }
+
+
 
     my %dep =
         verb   => ~$m<Verb>,
@@ -118,18 +167,4 @@ sub parse-dependency-statement(
     =end comment
 
     return %dep;
-}
-
-# a simple line splitter
-sub parse-line(Str $line --> Array) {
-    my @deps;
-    for $line.split(';') -> $part {
-        my %dep = parse-dependency-statement($part);
-
-        if %dep.elems {
-            @deps.push: %dep;
-        }
-    }
-
-    return @deps;
 }
