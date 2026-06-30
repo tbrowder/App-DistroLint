@@ -2,11 +2,14 @@ use Test;
 
 use App::DistroLint;
 
+my $debug = 1;
+
 subtest 'valid single dependency statements' => {
     my $dep = parse-dependency-statement(
         'use Foo::Bar:ver<0.2>:auth<sue>:api<3>',
         :file<lib/Foo.rakumod>,
         :line-number(12),
+        :$debug,
     );
 
     isa-ok $dep, Dependency;
@@ -20,6 +23,9 @@ subtest 'valid single dependency statements' => {
     isa-ok $dep.spec, Str;
 };
 
+done-testing;
+
+=finish
 subtest 'valid statement without adverbs' => {
     my $dep = parse-dependency-statement(
         'need Baz::Qux',

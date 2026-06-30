@@ -61,18 +61,21 @@ class Dependency is export {
         $spec.Str
     }
 }
+
 class DependencyError is export {
     has Str $.file;
     has Int $.line-number;
     has Str $.statement;
     has Str $.message;
 }
+
 class NilDependency is export {
     has Str $.file;
     has Int $.line-number;
 #   has Str $.statement;
     has Str $.message;
 }
+
 class DistStatus is export {
     has Str  $.spec;
     has Bool $.installed;
@@ -148,7 +151,8 @@ sub parse-dependency-statement(
 ) is export {
 	
     unless looks-like-dependency-statement($statement) {
-        $deptyp = NilDependency.new(
+        if $debug { say "DEBUG: does not look like a dep statement"; }
+        my $deptyp = NilDependency.new(
             :$file,
             :$line-number,
             :statement($statement),
@@ -157,10 +161,25 @@ sub parse-dependency-statement(
         return $deptyp;
     }
 
+    if $debug { 
+        say qq:to/HERE/;
+        DEBUG: DOES look like a dep statement:
+            statement: '$statement'
+        HERE
+    }
+
     =begin comment
     # original
     #                    use|need|require
-    my $m = $statement ~~ /^ \s* <Verb> \s+ <Name> \s* $<advs>=(<Adv>*) \s* $/;
+    my $m = $statement ~~ /^ 
+        \s* 
+        <Verb> 
+        \s+ 
+        <Name> 
+        \s* 
+        $<advs>=(<Adv>*) 
+        \s* 
+        $/;
     =end comment
 
     # latest as of 28 Jun 2026
@@ -183,6 +202,7 @@ sub parse-dependency-statement(
      \s* $
    /;
 
+
     unless $m {
         return DependencyError.new(
             :$file,
@@ -194,51 +214,59 @@ sub parse-dependency-statement(
     }
 
     # fill the dep with data from $m
-    my %dep =
-        verb   => ~$m<Verb>,
-        module => ~$m<Name>,
-    ;
+    my $command = ~$m<command>;
+    my $module  = ~$m<module>;
+    my $adverbs = ~$m<adverbs>;
 
-    for $m<adverb> -> $a {
-        my $name  = ~$a<name>;
-        my $value;
-        if $name eq 'api' {
-            $value = +$a<value>;
-        }
-        else {
-            $value = ~$a<value>;
-        }
-
-        # return a DependencyError
-        if %dep{$name}:exists {
-            return DependencyError.new(
-                :$file,
-                :$line-number,
-                :statement($statement),
-                #:message("duplicate '{:$m<advs>}' adverb"),
-                :message("invalid or duplicate adverb"),
-            )
-        }
-
-        %dep{$name} = $value;
+    if $debug {
+        say "DEBUG \$m";
+        say "  command: '$m<command>'";
+        say();
     }
+
+    my $import-tail = $m<ImportTail>
+        ?? ~m<ImportTail>.trim
+        !! '';
 
     my $dep = Dependency.new(
         :$file,
         :$line-number,
-        :statement($statement),
-
-        :command(%dep<verb>),
-        :module(%dep<module>),
-
+        :$statement,
+        :$command,
+        :$module,
     );
-    # other parts if they exist
-    $dep.ver  = %dep<ver>  if %dep<ver>:exists;
-    $dep.auth = %dep<auth> if %dep<auth>:exists;
-    $dep.api  = %dep<api>  if %dep<api>:exists;
 
-    $dep
+    my %seen;
 
+    for $adverbs ~~ m:g/
+        ':' $<name>=(ver|auth|api)
+        '<' $<value>=(<-[>]>+)
+        '>'
+        / -> $adv {
+
+        my $name  = ~$adv<name>;
+        my $value = ~$adv<value>;
+
+        if %seen{$name}:exists {
+            # return a DependencyError
+            return DependencyError.new(
+               :$file,
+               :$line-number,
+               :statement($statement),
+               #:message("duplicate '{:$m<advs>}' adverb"),
+               :message("invalid or duplicate adverb"),
+            );
+        }
+
+        %seen{$name} = True;
+
+        given $name {
+            when 'ver'  { $dep.ver  = $value }
+            when 'auth' { $dep.auth = $value }
+            when 'api ' { $dep.api  = $value }
+        }
+    }
+    return $dep;
 }
 
 sub extract-dependencies-from-line(
@@ -655,6 +683,9 @@ sub looks-like-dependency-statement(
     $statement
     --> Bool
 ) is export {
-    return so $statement ~~ /^ \s* (use|need|require) \s+ /;
+    if $statement ~~ /^ \s* (use|need|require) \s+ / {
+        return True;
+    }
+    return False;
 }
 
