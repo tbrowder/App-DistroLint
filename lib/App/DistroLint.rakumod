@@ -41,7 +41,7 @@ class Dependency is export {
 
     has Str $.ver  is rw;
     has Str $.auth is rw;
-    has Int $.api  is rw;
+    has Int $.api  is rw = Int;
 
     method spec(--> Str) {
         my $spec = $!module;
@@ -219,7 +219,7 @@ sub parse-dependency-statement(
         / -> $adv {
 
         my $name  = ~$adv<name>;
-        my $value = ~$adv<value>;
+        my $value = ~$adv<value>.Str;
 
         if %seen{$name}:exists {
             # return a DependencyError
@@ -237,7 +237,17 @@ sub parse-dependency-statement(
         given $name {
             when 'ver'  { $dep.ver  = $value }
             when 'auth' { $dep.auth = $value }
-            when 'api'  { $dep.api  = $value }
+            when 'api'  { 
+                unless $value ~~ /^\d+$/ {
+                    return DependencyError.new(
+                        :$file,
+                        :$line-number,
+                        :$statement,
+                        :message("api value '$value' is not an integer"),
+                    );
+                }
+                $dep.api = $value.Int 
+            }
         }
     }
     return $dep;

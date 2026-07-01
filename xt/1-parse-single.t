@@ -2,7 +2,7 @@ use Test;
 
 use App::DistroLint;
 
-my $debug = 1;
+my $debug = 0;
 
 subtest 'valid single dependency statements' => {
     my $dep = parse-dependency-statement(

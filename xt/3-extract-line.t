@@ -1,4 +1,5 @@
 use Test;
+
 use App::DistroLint;
 
 subtest 'multiple statements on one physical line' => {
