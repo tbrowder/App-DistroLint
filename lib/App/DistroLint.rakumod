@@ -27,18 +27,9 @@ our regex Verb is export  { use | need | require }
 our regex Name is export  { <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
                      [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* }
 our regex Adv  is export  { ':' $<name>=(ver|auth|api) '<' $<value>=[ <-[>]>+ ] '>' }
-our regex ImportTail is export {
-    [
-        \s+
-        [
-            ':' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
-            | ':' <[A..Z]>+
-            | ':' <[\w \-]>+
-            | ',' 
-            | '(' <-[)]>* ')'
-        ]+
-    ]?
-}
+#our regex ImportTail is export {
+#    [ \h .* ]?
+#}
 
 class Dependency is export {
     has Str $.file;
@@ -69,7 +60,7 @@ class DependencyError is export {
     has Str $.message;
 }
 
-class NilDependency is export {
+class IgnoredStatement is export {
     has Str $.file;
     has Int $.line-number;
 #   has Str $.statement;
@@ -138,21 +129,21 @@ sub zef-status(
     );
 }
 
-subset DepOrErrOrNil of Any where { 
-    $_ ~~ any(Dependency, DependencyError, NilDependency) 
+subset DepOrErrOrIgn of Any where { 
+    $_ ~~ any(Dependency, DependencyError, IgnoredStatement) 
 }
-my DepOrErrOrNil $deptyp;
+my DepOrErrOrIgn $deptyp;
 sub parse-dependency-statement(
     Str $statement,
     Str :$file!,
     Int :$line-number!,
     :$debug,
-    --> DepOrErrOrNil
+    --> DepOrErrOrIgn
 ) is export {
 	
     unless looks-like-dependency-statement($statement) {
         if $debug { say "DEBUG: does not look like a dep statement"; }
-        my $deptyp = NilDependency.new(
+        my $deptyp = IgnoredStatement.new(
             :$file,
             :$line-number,
             :statement($statement),
@@ -168,21 +159,6 @@ sub parse-dependency-statement(
         HERE
     }
 
-    =begin comment
-    # original
-    #                    use|need|require
-    my $m = $statement ~~ /^ 
-        \s* 
-        <Verb> 
-        \s+ 
-        <Name> 
-        \s* 
-        $<advs>=(<Adv>*) 
-        \s* 
-        $/;
-    =end comment
-
-    # latest as of 28 Jun 2026
     my $m = $statement ~~ /^ 
         \s* 
         $<command>=(use|need|require)
@@ -195,10 +171,12 @@ sub parse-dependency-statement(
         $<adverbs>=(
             [
                 ':' $<name>=(ver|auth|api)
-                ':' $<value>=(<-[>]>+)
+                '<' $<value>=(<-[>]>+)
+                '>'
             ]*
         )
-        <ImportTail>
+        #<.ImportTail>
+     [\s .*]?
      \s* $
    /;
 
@@ -223,10 +201,6 @@ sub parse-dependency-statement(
         say "  command: '$m<command>'";
         say();
     }
-
-    my $import-tail = $m<ImportTail>
-        ?? ~m<ImportTail>.trim
-        !! '';
 
     my $dep = Dependency.new(
         :$file,
@@ -263,7 +237,7 @@ sub parse-dependency-statement(
         given $name {
             when 'ver'  { $dep.ver  = $value }
             when 'auth' { $dep.auth = $value }
-            when 'api ' { $dep.api  = $value }
+            when 'api'  { $dep.api  = $value }
         }
     }
     return $dep;
@@ -297,12 +271,7 @@ sub extract-dependencies-from-line(
             :$line-number,
         );
 
-        if $result ~~ Dependency {
-             @deps.push($result);
-        }
-        else {
-            @deps.push($result);   # DependencyError object
-        }
+        @deps.push($result);
     }
 
     return @deps;
@@ -333,6 +302,7 @@ sub scan-distribution(
 
                 my $line = strip-comment $raw-line;
                 next unless $line ~~ /\S/;
+                next if $line ~~ /^ \h* '=' /;
 
                 my @items = extract-dependencies-from-line(
                     $line,
@@ -471,7 +441,7 @@ sub build-provides-map(
                 /^
                 \s*
                 [unit \s+]?
-                [module|class|role|grammar|package]
+                (module|class|role|grammar|package)
                 \s+
                 (<[\w]>+ [ '::' <[\w]>+ ]*)
                 /
