@@ -468,6 +468,19 @@ sub build-provides-map(
     return %provides;
 }
 
+sub module-from-lib-path(
+    IO::Path $root,
+    IO::Path $path,
+    :$debug,
+    --> Str
+) is export {
+    my $rel = $path.relative($root).Str;
+    $rel ~~ s/^ 'lib/' //;
+    $rel ~~ s/^ '.' <[.]>+ $ //;
+
+    return $rel;
+}
+
 sub analyze-meta6(
     $meta,
     :%depends!,
