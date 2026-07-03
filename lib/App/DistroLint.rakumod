@@ -78,6 +78,8 @@ class DistStatus is export {
     }
 }
 
+our @issues is export;
+
 sub zef-status(
     Str $spec,
     Callable :$runner = &real-runner,
@@ -129,6 +131,8 @@ sub zef-status(
         :in-fez($in-fez),
     );
 }
+
+my %ignored-modules;
 
 subset DepOrErrOrIgn of Any where {
     $_ ~~ any(Dependency, DependencyError, IgnoredStatement)
@@ -373,6 +377,11 @@ sub classify-dependencies(
 
     for @dependencies -> $dep {
         next unless $dep ~~ Dependency;
+        if %ignored-modules{$dep.module}:exists {
+            # report somewhere?
+            @issues.push: "removed built-in module 'Test' from file '{$dep.file}'";
+            next;
+        }
 
         my $spec = $dep.spec;
         my $module-top = top-module($dep.module);
