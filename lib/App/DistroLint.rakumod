@@ -20,6 +20,7 @@ The parser returns a normalized key in canonical order:
 
 =end comment
 
+use File::Find;
 use Text::Utils :strip-comment;
 use JSON::Fast;
 
@@ -129,8 +130,8 @@ sub zef-status(
     );
 }
 
-subset DepOrErrOrIgn of Any where { 
-    $_ ~~ any(Dependency, DependencyError, IgnoredStatement) 
+subset DepOrErrOrIgn of Any where {
+    $_ ~~ any(Dependency, DependencyError, IgnoredStatement)
 }
 my DepOrErrOrIgn $deptyp;
 sub parse-dependency-statement(
@@ -140,7 +141,7 @@ sub parse-dependency-statement(
     :$debug,
     --> DepOrErrOrIgn
 ) is export {
-	
+
     unless looks-like-dependency-statement($statement) {
         if $debug { say "DEBUG: does not look like a dep statement"; }
         my $deptyp = IgnoredStatement.new(
@@ -152,20 +153,20 @@ sub parse-dependency-statement(
         return $deptyp;
     }
 
-    if $debug { 
+    if $debug {
         say qq:to/HERE/;
         DEBUG: DOES look like a dep statement:
             statement: '$statement'
         HERE
     }
 
-    my $m = $statement ~~ /^ 
-        \s* 
+    my $m = $statement ~~ /^
+        \s*
         $<command>=(use|need|require)
-        \s* 
+        \s*
         $<module>=(
                    <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*
-            [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]* 
+            [ '::' <[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>* ]*
         )
         \s*
         $<adverbs>=(
@@ -176,8 +177,8 @@ sub parse-dependency-statement(
             ]*
         )
         #<.ImportTail>
-     [\s .*]?
-     \s* $
+        \h .*
+     $
    /;
 
 
@@ -237,7 +238,7 @@ sub parse-dependency-statement(
         given $name {
             when 'ver'  { $dep.ver  = $value }
             when 'auth' { $dep.auth = $value }
-            when 'api'  { 
+            when 'api'  {
                 unless $value ~~ /^\d+$/ {
                     return DependencyError.new(
                         :$file,
@@ -246,7 +247,7 @@ sub parse-dependency-statement(
                         :message("api value '$value' is not an integer"),
                     );
                 }
-                $dep.api = $value.Int 
+                $dep.api = $value.Int
             }
         }
     }
@@ -434,49 +435,62 @@ sub read-meta6(
 
 sub build-provides-map(
     IO::Path $root,
+    :$debug,
     --> Hash
 ) is export {
     my %provides;
 
     my $lib = $root.add('lib');
+    say "DEBUG: lib = {$lib.absolute}" if $debug;
+    say "DEBUG: lib exists = {$lib.d}" if $debug;
+
     return %provides unless $lib.d;
 
-    for $lib.dir(:recursive) -> $path {
-        next unless $path.f;
+    my @files = find(
+        :dir($lib.Str),
+        :type('file'),
+        :exclude(/'.precomp' | '.git' /),
+    );
 
-        my $rel = $path.relative($root).Str;
+    if $debug {
+        say "DEBUG: found {@files.elems} files";
+        say "  $_" for @files;
+    }
 
-        for $path.lines -> $line {
-            my $m = $line.match(
-                /^
-                \s*
-                [unit \s+]?
-                (module|class|role|grammar|package)
-                \s+
-                (<[\w]>+ [ '::' <[\w]>+ ]*)
-                /
-            );
+    for @files -> $file {
+        my $path = $file.IO;
 
-            if $m {
-                my $module = ~$m[0];
-                %provides{$module} = $rel;
-                last;
-            }
-        }
+        next unless $path.extension eq 'rakumod'
+            or $path.extension eq 'pm6';
+
+        my $rel    = $path.relative($root).Str;
+
+        my $module = $rel;
+        $module ~~ s/^lib\///;
+        $module ~~ s/\.rakumod$//;
+        $module ~~ s/\.pm6$//;
+        $module ~~ s:g/\//::/;
+
+        say "DEBUG: \$path = '$path'" if $debug;
+        %provides{$module} = $rel;
     }
 
     return %provides;
 }
 
-sub module-from-lib-path(
+sub module-name-from-lib-path(
+
     IO::Path $root,
     IO::Path $path,
     :$debug,
     --> Str
 ) is export {
     my $rel = $path.relative($root).Str;
+
     $rel ~~ s/^ 'lib/' //;
-    $rel ~~ s/^ '.' <[.]>+ $ //;
+    $rel ~~ s/ '.rakumod' $ //;
+    $rel ~~ s/ '.pm6' $ //;
+    $rel ~~ s:g/ '/' /'::'/;
 
     return $rel;
 }
@@ -681,4 +695,3 @@ sub looks-like-dependency-statement(
     }
     return False;
 }
-

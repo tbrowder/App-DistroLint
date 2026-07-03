@@ -7,6 +7,7 @@
   ],
   "depends": [
     "Text::Utils",
+    "File::Find",
     "JSON::Fast"
   ],
   "description": "Provides a lint tool for Raku distro developers",
