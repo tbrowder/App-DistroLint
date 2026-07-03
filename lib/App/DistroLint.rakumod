@@ -177,25 +177,39 @@ sub parse-dependency-statement(
             ]*
         )
         #<.ImportTail>
-        \h .*
-     $
+        #\h .*
+        #$
    /;
-
 
     unless $m {
         return DependencyError.new(
             :$file,
             :$line-number,
             :statement($statement),
-            #:message("duplicate '{:$m<advs>}' adverb"),
             :message("invalid or duplicate adverb"),
         );
     }
+
+    if $statement ~~ / ':' (<[A..Z a..z _]> <[A..Z a..z 0..9 _ \-]>*) '<' / {
+       my $adv-name = ~$0;
+
+       unless $adv-name eq 'ver'
+           or $adv-name eq 'auth'
+           or $adv-name eq 'api' {
+               return DependencyError.new(
+                   :$file,
+                   :$line-number,
+                   :$statement,
+                   :message("unknown :$adv-name adverb"),
+               );
+         }
+   }
 
     # fill the dep with data from $m
     my $command = ~$m<command>;
     my $module  = ~$m<module>;
     my $adverbs = ~$m<adverbs>;
+
 
     if $debug {
         say "DEBUG \$m";
@@ -248,6 +262,14 @@ sub parse-dependency-statement(
                     );
                 }
                 $dep.api = $value.Int
+            }
+            default {
+                return DependencyError.new(
+                    :$file,
+                    :$line-number,
+                    :$statement,
+                    :message("unknown api value '$name'"),
+                 );
             }
         }
     }

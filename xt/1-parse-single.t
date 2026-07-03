@@ -12,20 +12,20 @@ subtest 'valid single dependency statements' => {
         :$debug,
     );
 
+    diag $dep.message if $dep ~~ DependencyError;
+
     isa-ok $dep, Dependency;
+
     is $dep.command, 'use';
     is $dep.module, 'Foo::Bar';
     is $dep.ver, '0.2';
-    is $dep.auth, 'sue'; 
-    is $dep.api, 3;
+    is $dep.auth, 'sue';
+    is-deeply $dep.api, 3;
     is $dep.file, 'lib/Foo.rakumod';
     is $dep.line-number, 12;
     isa-ok $dep.spec, Str;
 };
 
-done-testing;
-
-=finish
 subtest 'valid statement without adverbs' => {
     my $dep = parse-dependency-statement(
         'need Baz::Qux',
