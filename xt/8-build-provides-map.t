@@ -6,7 +6,7 @@ use App::DistroLint;
 
 my $debug = 0;
 
-my $root = "xt/data/module-discovery".IO;
+my $root = "test-data/module-discovery".IO;
 
 say "DEBUG: \$root = $root'" if $debug;
 
