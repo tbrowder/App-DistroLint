@@ -1,5 +1,5 @@
-<Errors recognized
-==================
+Errors recognized
+=================
 
 Following is a list of specific errors sought for in the various parts of a distribution's files. in a standard layout.
 
