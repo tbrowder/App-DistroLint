@@ -2,22 +2,21 @@
 	
 Z<# info to be placed in the README.rakudoc file>
 
-=head1 NAME
+=head1 <Errors recognized
 
-B<Errors recognized> - 
 Following is a list of specific errors sought for
 in the various parts of a distribution's files.
 in a standard layout.
 
-=head1 META6.json errors
+=head2 META6.json errors
 
-=head2 Errors in "provides" array
+=head3 Errors in "provides" array
 
 =item  missing items
 =item  duplicate entries
 =item  illegal entries
 
-=head2 Errors in the "*depends" arrays
+=head3 Errors in the "*depends" arrays
 
 =item  missing items
 =item  illegal entries
@@ -31,7 +30,7 @@ in a standard layout.
 =item duplicate 'use'd modules in one file
 =item 'use'd modules not found in any depends array
 
-=head1 Ecosystem installation errors
+=head2 Ecosystem installation errors
 
 =item modules uninstalled
 =item modules not found in Fez 

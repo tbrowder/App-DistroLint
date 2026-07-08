@@ -1,13 +1,12 @@
-NAME
-====
+<Errors recognized
+==================
 
-**Errors recognized** - Following is a list of specific errors sought for in the various parts of a distribution's files. in a standard layout.
+Following is a list of specific errors sought for in the various parts of a distribution's files. in a standard layout.
 
 META6.json errors
-=================
+-----------------
 
-Errors in "provides" array
---------------------------
+### Errors in "provides" array
 
   * missing items
 
@@ -15,8 +14,7 @@ Errors in "provides" array
 
   * illegal entries
 
-Errors in the "*depends" arrays
--------------------------------
+### Errors in the "*depends" arrays
 
   * missing items
 
@@ -38,7 +36,7 @@ Errors in rakumod files
   * 'use'd modules not found in any depends array
 
 Ecosystem installation errors
-=============================
+-----------------------------
 
   * modules uninstalled
 
