@@ -2,8 +2,9 @@
 	
 Z<# info to be placed in the README.rakudoc file>
 
-=TITLE Errors recognized
+=head1 NAME
 
+B<Errors recognized> - 
 Following is a list of specific errors sought for
 in the various parts of a distribution's files.
 in a standard layout.

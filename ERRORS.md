@@ -1,9 +1,7 @@
-TITLE
-=====
+NAME
+====
 
-Errors recognized
-
-Following is a list of specific errors sought for in the various parts of a distribution's files. in a standard layout.
+**Errors recognized** - Following is a list of specific errors sought for in the various parts of a distribution's files. in a standard layout.
 
 META6.json errors
 =================
