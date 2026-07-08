@@ -1,12 +1,15 @@
 TITLE
+=====
+
 Errors recognized
 
-Following is a list of specific errors sought for in the various parts of a
-distribution's files. in a standard layout.
+Following is a list of specific errors sought for in the various parts of a distribution's files. in a standard layout.
 
 META6.json errors
+=================
 
-  Errors in "provides" array
+Errors in "provides" array
+--------------------------
 
   * missing items
 
@@ -14,7 +17,8 @@ META6.json errors
 
   * illegal entries
 
-  Errors in the "*depends" arrays
+Errors in the "*depends" arrays
+-------------------------------
 
   * missing items
 
@@ -26,7 +30,8 @@ META6.json errors
 
   * duplicate module names
 
-  Errors in rakumod files
+Errors in rakumod files
+-----------------------
 
   * mmodule name adverbs in 'use'd modules
 
@@ -35,7 +40,9 @@ META6.json errors
   * 'use'd modules not found in any depends array
 
 Ecosystem installation errors
+=============================
 
   * modules uninstalled
 
   * modules not found in Fez 
+

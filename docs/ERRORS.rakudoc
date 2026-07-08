@@ -8,15 +8,16 @@ Following is a list of specific errors sought for
 in the various parts of a distribution's files.
 in a standard layout.
 
-
 =head1 META6.json errors
 
 =head2 Errors in "provides" array
+
 =item  missing items
 =item  duplicate entries
 =item  illegal entries
 
 =head2 Errors in the "*depends" arrays
+
 =item  missing items
 =item  illegal entries
 =item  module name adverbs out of correct order (ver, auth, api)
