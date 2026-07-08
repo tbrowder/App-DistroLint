@@ -1,0 +1,22 @@
+Errors in module TestMod:
+========================
+
+META6.json errors
++++++++++++++++++
+
+Errors in "provides" array
+Errors in the "depends", "test-depends", and "build-depends" arrays
+
+module name adverbs out of alphabetical order
+module name duplicate adverbs
+duplicate module names
+
+Errors in rakumod files
++++++++++++++++++++++++
+
+module name adverbs in 'use'd modules
+duplicate 'use'd modules in one file
+
+modules uninstalled
+modules not found in Fez 
+
