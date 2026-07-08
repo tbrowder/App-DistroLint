@@ -1,11 +1,12 @@
+TITLE
+Errors recognized
+
 Following is a list of specific errors sought for in the various parts of a
 distribution's files. in a standard layout.
 
-Errors recognized
+META6.json errors
 
-  META6.json errors
-
-    Errors in "provides" array
+  Errors in "provides" array
 
   * missing items
 
@@ -13,7 +14,7 @@ Errors recognized
 
   * illegal entries
 
-    Errors in the "*depends" arrays
+  Errors in the "*depends" arrays
 
   * missing items
 
@@ -33,7 +34,7 @@ Errors recognized
 
   * 'use'd modules not found in any depends array
 
-  Ecosystem installation errors
+Ecosystem installation errors
 
   * modules uninstalled
 
