@@ -23,6 +23,8 @@ Running binary `distrolint` on a distribution repository can be very helpful dur
 
   * Detects module adverbs and recommends they only be used in the META6.json file.
 
+More specific information is in the 'ERRORS' file.
+
 Please file an issue if you would like other capabilities added.
 
 AUTHOR

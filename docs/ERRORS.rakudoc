@@ -1,0 +1,36 @@
+=begin pod
+	
+Z<# info to be placed in the README.rakudoc file>
+
+Following is a list of specific errors sought for
+in the various parts of a distribution's files.
+in a standard layout.
+
+=head1 Errors recognized
+
+=head2 META6.json errors
+
+=head3 Errors in "provides" array
+=item  missing items
+=item  duplicate entries
+=item  illegal entries
+
+=head3 Errors in the "*depends" arrays
+=item  missing items
+=item  illegal entries
+=item  module name adverbs out of correct order (ver, auth, api)
+=item  module name duplicate adverbs
+=item  duplicate module names
+
+=head2 Errors in rakumod files
+
+=item mmodule name adverbs in 'use'd modules
+=item duplicate 'use'd modules in one file
+=item 'use'd modules not found in any depends array
+
+=head2 Ecosystem installation errors
+
+=item modules uninstalled
+=item modules not found in Fez 
+
+=end pod

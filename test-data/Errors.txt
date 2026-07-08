@@ -5,17 +5,26 @@ META6.json errors
 +++++++++++++++++
 
 Errors in "provides" array
-Errors in the "depends", "test-depends", and "build-depends" arrays
+  missing items
+  duplicate entries
+  illegal entries
 
-module name adverbs out of alphabetical order
-module name duplicate adverbs
-duplicate module names
+Errors in the "depends", "test-depends", and "build-depends" arrays
+  missing items
+  illegal entries
+  module name adverbs out of correct order (ver, auth, api)
+  module name duplicate adverbs
+  duplicate module names
 
 Errors in rakumod files
 +++++++++++++++++++++++
 
 module name adverbs in 'use'd modules
 duplicate 'use'd modules in one file
+'use'd modules not found in any depends array
+
+Ecosystem installation errors
+*++++++++++++++++++++++++++++
 
 modules uninstalled
 modules not found in Fez 
