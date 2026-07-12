@@ -1,0 +1,28 @@
+{
+  "auth": "zef:tbrowder",
+  "authors": [
+    "Tom Browder"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+    "Text::Utils"
+  ],
+  "description": "Provides an example of a Raku module structure.",
+  "license": "Artistic-2.0",
+  "name": "Tmod",
+  "perl": "6.d",
+  "provides": {
+    "Tmod": "lib/Tmod.rakumod",
+    "Tmod::A": "lib/Tmod/A.rakumod",
+    "Tmod::A::B": "lib/Tmod/A/B.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "https://github.com/tbrowder/App-DistroLint.git",
+  "tags": [
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
+}
