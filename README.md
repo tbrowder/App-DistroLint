@@ -23,9 +23,53 @@ Running binary `distrolint` on a distribution repository can be very helpful dur
 
   * Detects module adverbs and recommends they only be used in the META6.json file.
 
-More specific information is in the 'ERRORS' file.
+More detailed information follows.
 
-Please file an issue if you would like other capabilities added.
+Errors recognized
+=================
+
+Following is a list of specific errors sought for in the various parts of a distribution's files. in a standard layout.
+
+META6.json errors
+-----------------
+
+### Errors in the "provides" array
+
+  * missing items
+
+  * duplicate entries
+
+  * illegal entries
+
+### Errors in the "*depends" arrays
+
+  * missing items
+
+  * unrequired entries
+
+  * module name adverbs out of correct order (ver, auth, api)
+
+  * module name duplicate adverbs
+
+  * duplicate module names
+
+Errors in rakumod files
+-----------------------
+
+  * module name adverbs in 'use'd modules
+
+  * duplicate 'use'd modules in one file
+
+  * 'use'd modules not found in any depends array
+
+Ecosystem installation errors
+-----------------------------
+
+  * modules uninstalled
+
+  * modules not found in Fez 
+
+    file an issue if you would like other capabilities added.
 
 AUTHOR
 ======

@@ -28,9 +28,42 @@ capabilities are:
 =item Detects module adverbs and recommends they only be used in the
       META6.json file.
 
-More specific information is in the 'ERRORS' file.
+More detailed information follows.
 
-Please file an issue if you would like other capabilities added.
+=head1 Errors recognized
+
+Following is a list of specific errors sought for
+in the various parts of a distribution's files.
+in a standard layout.
+
+=head2 META6.json errors
+
+=head3 Errors in the "provides" array
+
+=item  missing items
+=item  duplicate entries
+=item  illegal entries
+
+=head3 Errors in the "*depends" arrays
+
+=item  missing items
+=item  unrequired entries
+=item  module name adverbs out of correct order (ver, auth, api)
+=item  module name duplicate adverbs
+=item  duplicate module names
+
+=head2 Errors in rakumod files
+
+=item module name adverbs in 'use'd modules
+=item duplicate 'use'd modules in one file
+=item 'use'd modules not found in any depends array
+
+=head2 Ecosystem installation errors
+
+=item modules uninstalled
+=item modules not found in Fez 
+
+ file an issue if you would like other capabilities added.
 
 =head1 AUTHOR
 
