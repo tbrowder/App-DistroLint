@@ -18,7 +18,7 @@ META6.json errors
 
   * missing items
 
-  * illegal entries
+  * unrequired entries
 
   * module name adverbs out of correct order (ver, auth, api)
 

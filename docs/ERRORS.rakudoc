@@ -19,7 +19,7 @@ in a standard layout.
 =head3 Errors in the "*depends" arrays
 
 =item  missing items
-=item  illegal entries
+=item  unrequired entries
 =item  module name adverbs out of correct order (ver, auth, api)
 =item  module name duplicate adverbs
 =item  duplicate module names

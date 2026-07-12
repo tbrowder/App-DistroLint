@@ -6,7 +6,8 @@
   "build-depends": [
   ],
   "depends": [
-    "Text::Utils"
+    "JSON::Fast:ver<0.20.1>:auth<zef:timo>",
+    "Text::Utils:ver<4.0.2>:auth<zef:tbrowder>:api<3>"
   ],
   "description": "Provides an example of a Raku module structure.",
   "license": "Artistic-2.0",

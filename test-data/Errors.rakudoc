@@ -1,0 +1,17 @@
+=begin pod
+
+=head1 META6.json
+
+The following tables illustrate valid META6.json entries along
+with erroneous entries.
+
+=begin table :caption<"provides">
+
+
+
+=end table
+
+
+
+=end pod
+
