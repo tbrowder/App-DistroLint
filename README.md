@@ -69,7 +69,7 @@ Ecosystem installation errors
 
   * modules not found in Fez 
 
-    file an issue if you would like other capabilities added.
+**File an issue if you would like other capabilities added.**
 
 AUTHOR
 ======

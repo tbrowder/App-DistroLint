@@ -63,7 +63,7 @@ in a standard layout.
 =item modules uninstalled
 =item modules not found in Fez 
 
- file an issue if you would like other capabilities added.
+B<File an issue if you would like other capabilities added.>
 
 =head1 AUTHOR
 
@@ -76,3 +76,4 @@ Tom Browder <tbrowder@acm.org>
 This library is free software; you may redistribute it or modify it under the Artistic License 2.0.
 
 =end pod
+
