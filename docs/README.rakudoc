@@ -63,6 +63,10 @@ in a standard layout.
 =item modules uninstalled
 =item modules not found in Fez 
 
+=head1 Summary
+
+See examples of errors handled in file C<test-modules/Tmod-errs/*>.
+
 B<File an issue if you would like other capabilities added.>
 
 =head1 AUTHOR

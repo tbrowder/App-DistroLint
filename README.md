@@ -69,6 +69,11 @@ Ecosystem installation errors
 
   * modules not found in Fez 
 
+Summary
+=======
+
+See examples of errors handled in file `test-modules/Tmod-errs/*`.
+
 **File an issue if you would like other capabilities added.**
 
 AUTHOR
