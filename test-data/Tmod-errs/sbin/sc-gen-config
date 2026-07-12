@@ -1,6 +1,6 @@
 #!/usr/bin/env raku
 
-use SingleCheck;
+use Tmod;
 
 my $debug   = 0;
 my $home    = $*HOME.defined ?? $*HOME !! 0;
@@ -46,7 +46,6 @@ if %*ENV{$envvar}:exists {
         exit;
     }
     # check or populate the directory
-    populate $dir
 }
 else {
     unless %*ENV<HOME>:exists {
@@ -64,5 +63,4 @@ else {
         mkdir $dir;
     }
     # check or populate the directory
-    populate $dir
 }

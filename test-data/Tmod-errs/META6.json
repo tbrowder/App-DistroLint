@@ -6,7 +6,10 @@
   "build-depends": [
   ],
   "depends": [
-    "Abbreviations",
+    "Fake",
+    "Fake2:auth<doofus>",
+    "Fake3:ver<1>:ver<1>",
+    "JSON::Fast",
     "JSON::Fast:ver<0.20.1>:auth<zef:timo>",
     "Text::Utils:ver<4.0.2>:auth<zef:tbrowder>:api<3>"
   ],

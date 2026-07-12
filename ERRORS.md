@@ -6,7 +6,7 @@ Following is a list of specific errors sought for in the various parts of a dist
 META6.json errors
 -----------------
 
-### Errors in "provides" array
+### Errors in the "provides" array
 
   * missing items
 
@@ -29,7 +29,7 @@ META6.json errors
 Errors in rakumod files
 -----------------------
 
-  * mmodule name adverbs in 'use'd modules
+  * module name adverbs in 'use'd modules
 
   * duplicate 'use'd modules in one file
 

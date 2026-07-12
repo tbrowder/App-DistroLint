@@ -10,7 +10,7 @@ in a standard layout.
 
 =head2 META6.json errors
 
-=head3 Errors in "provides" array
+=head3 Errors in the "provides" array
 
 =item  missing items
 =item  duplicate entries
@@ -26,7 +26,7 @@ in a standard layout.
 
 =head2 Errors in rakumod files
 
-=item mmodule name adverbs in 'use'd modules
+=item module name adverbs in 'use'd modules
 =item duplicate 'use'd modules in one file
 =item 'use'd modules not found in any depends array
 
